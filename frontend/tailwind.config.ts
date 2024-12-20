@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import { fontFamily } from 'tailwindcss/defaultTheme';
 
 const config: Config = {
 	darkMode: ['class'],
@@ -54,7 +55,7 @@ const config: Config = {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['Figtree', 'ui-sans-serif', 'system-ui', 'sans-serif']
+				sans: ['"Figtree"', ...fontFamily.sans]
 			},
 			width: {
 				'176': '44rem'
