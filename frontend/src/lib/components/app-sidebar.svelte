@@ -32,6 +32,64 @@
 			icon: Settings
 		}
 	];
+	const chatHistory = [
+		{
+			title: 'Lorem ipsum dolor sit amet, consectetur adipiscing',
+			url: '/chat-1'
+		},
+		{
+			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			url: '/chat-2'
+		},
+		{
+			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+			url: '/chat-3'
+		},
+		{
+			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
+			url: '/chat-4'
+		},
+		{
+			title: 'Molestie fames magna aptent vivamus nostra litora sapien condimentum. Sit curabitur sociosqu inceptos iaculis lacinia',
+			url: '/chat-5'
+		},
+		{
+			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			url: '/chat-2'
+		},
+		{
+			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+			url: '/chat-3'
+		},
+		{
+			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
+			url: '/chat-4'
+		},
+		{
+			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			url: '/chat-2'
+		},
+		{
+			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+			url: '/chat-3'
+		},
+		{
+			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
+			url: '/chat-4'
+		},
+		{
+			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			url: '/chat-2'
+		},
+		{
+			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+			url: '/chat-3'
+		},
+		{
+			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
+			url: '/chat-4'
+		}
+	];
 </script>
 
 <Sidebar.Root collapsible="icon" class="pl-0.5">
@@ -61,7 +119,7 @@
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon />
-										<span class="text-md">{item.title}</span>
+										<span class="text-sm">{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
@@ -74,9 +132,15 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each items as item (item.title)}
+					{#each chatHistory as chat}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>This is a chat.</Sidebar.MenuButton>
+							<Sidebar.MenuButton>
+								{#snippet child({ props })}
+									<a href={chat.url} {...props}>
+										<span class="text-sm">{chat.title}</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
 					{/each}
 				</Sidebar.Menu>
