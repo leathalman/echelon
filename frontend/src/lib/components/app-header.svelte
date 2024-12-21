@@ -6,7 +6,7 @@
 
 <div class="flex flex-row flex-growth justify-between items-center p-2 h-14">
 	<div class="flex flex-col ">
-		<div class="text-lg font-semibold">EchelonGPT</div>
+		<span class="text-lg font-semibold">EchelonGPT</span>
 	</div>
 	<DarkModeSwitch />
 </div>
