@@ -88,7 +88,6 @@
 	<Sidebar.Header>
 		<div class="flex flex-row justify-between items-center px-1 py-2 h-14">
 			<Button variant="outline" size="icon">
-				<!--				<PanelLeft size={10} />-->
 				<Sidebar.Trigger />
 			</Button>
 			<div class="flex flex-row space-x-3">
