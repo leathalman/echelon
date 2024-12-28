@@ -80,23 +80,16 @@
 		{
 			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
 			url: '/chat-2'
-		},
-		{
-			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
-			url: '/chat-3'
-		},
-		{
-			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
-			url: '/chat-4'
 		}
 	];
 </script>
 
-<Sidebar.Root collapsible="icon" class="pl-0.5">
+<Sidebar.Root class="pl-0.5">
 	<Sidebar.Header>
 		<div class="flex flex-row justify-between items-center px-1 py-2 h-14">
 			<Button variant="outline" size="icon">
-				<PanelLeft size={10} />
+				<!--				<PanelLeft size={10} />-->
+				<Sidebar.Trigger />
 			</Button>
 			<div class="flex flex-row space-x-3">
 				<Button variant="outline" size="icon">
