@@ -4,5 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7.9"
-tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
+async-trait = "0.1.85"
+fastembed = "4.3.0"
+ollama-rs = "0.2.2"
+qdrant-client = "1.12.1"
+thiserror = "2.0.9"
+tokio = { version = "1.42.0", features = ["rt-multi-thread"] }
+uuid = { version = "1.11.0", features = ["fast-rng", "macro-diagnostics", "v4", "v5"] }

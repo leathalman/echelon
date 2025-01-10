@@ -2,3 +2,5 @@
 .DS_Store
 /node_modules/
 /backend/target
+/backend/data
+/backend/.fastembed_cache/

@@ -1,32 +1,39 @@
-use axum::{
-    routing::get,
-    Router
-};
+use crate::vectordb::VectorDatabaseType;
+use fastembed::TextEmbedding;
+
+mod vectordb;
 
 #[tokio::main]
 async fn main() {
-    // single route for application
-    // let app = Router::new().route("/", get(|| async {"Hello World"}));
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/foo", get(get_foo).post(post_foo))
-        .route("/foo/bar", get(foo_bar));
+    let model = TextEmbedding::try_new(Default::default()).unwrap();
 
+    let documents = vec!["What are all of the classes that Harrison has taken?"];
 
-    // run app with hyper, listen on port 3001
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
-}
+    let embeddings = model.embed(documents, None).unwrap();
 
-async fn root() {
-    println!("get root")
-}
-async fn get_foo() {
-    println!("get foo")
-}
-async fn post_foo() {
-    println!("post foo")
-}
-async fn foo_bar() {
-    println!("get foo bar")
+    println!("Embeddings length: {}", embeddings.len());
+    println!("Embeddings dimension: {}", embeddings[0].len());
+
+    let client = match vectordb::build(VectorDatabaseType::Qdrant) {
+        Ok(client) => client,
+        Err(err) => {
+            println!("{}", err);
+            std::process::exit(1)
+        }
+    };
+
+    // client
+    //     .add_vectors(embeddings, vec!["string"], "dim", "some_file")
+    //     .await
+    //     .unwrap();
+
+    // match client.create_collection("test").await {
+    //     Ok(_) => println!("Collection Created Successfully"),
+    //     Err(err) => {
+    //         println!("{}", err);
+    //         std::process::exit(1)
+    //     }
+    // }
+
+    client.query(embeddings[0].clone(), "dim").await.unwrap();
 }
