@@ -9,12 +9,12 @@ use ollama_rs::generation::options::GenerationOptions;
 use ollama_rs::Ollama;
 use std::default::Default;
 
-pub struct OllamaWrapper {
+pub struct OllamaAdapter {
     client: Ollama,
     model: Model,
 }
 
-impl OllamaWrapper {
+impl OllamaAdapter {
     pub fn new(model: Model) -> impl Inference {
         Self {
             client: Ollama::default(),
@@ -56,20 +56,16 @@ impl From<InferenceOptions> for GenerationOptions {
 }
 
 #[async_trait]
-impl Inference for OllamaWrapper {
+impl Inference for OllamaAdapter {
     async fn generate(
         &self,
         request: InferenceRequest,
     ) -> Result<InferenceResponse, InferenceError> {
-        match self
-            .client
-            .generate(
-                request
-                    .to_generation_request(self.model())
-                    .options(InferenceOptions::default().into()),
-            )
-            .await
-        {
+        let generation_request = request
+            .to_generation_request(self.model())
+            .options(InferenceOptions::default().into());
+
+        match self.client.generate(generation_request).await {
             Ok(response) => Ok(InferenceResponse::new(response)),
             Err(err) => Err(InferenceError::Message(err.to_string())),
         }
