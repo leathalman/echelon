@@ -29,11 +29,11 @@ impl InferenceRequest {
 }
 
 pub struct InferenceOptions {
-    /// Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)
+    // Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)
     pub num_predict: Option<i32>,
-    /// Sets the size of the context window used to generate the next token. (Default: 2048)
+    // Sets the size of the context window used to generate the next token. (Default: 2048)
     pub num_ctx: Option<u32>,
-    /// The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
+    // The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
     pub temperature: Option<f32>,
 }
 
@@ -66,11 +66,11 @@ impl InferenceOptions {
 
 #[derive(Debug)]
 pub struct InferenceResponse {
-    /// The response of the completion. This can be the entire completion or only a token if the completion is streaming.
+    // The response of the completion. This can be the entire completion or only a token if the completion is streaming.
     pub content: String,
-    /// Number of tokens in the response
+    // Number of tokens in the response
     pub eval_count: Option<u16>,
-    /// Time spent in milliseconds generating the response
+    // Time spent in milliseconds generating the response
     pub eval_duration: Option<u64>,
 }
 

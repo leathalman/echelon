@@ -15,6 +15,7 @@ pub struct OllamaAdapter {
 }
 
 impl OllamaAdapter {
+    // Ollama lib panics if default() cannot be constructed.
     pub fn new(model: Model) -> impl Inference {
         Self {
             client: Ollama::default(),
