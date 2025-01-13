@@ -93,8 +93,8 @@ impl VectorDB for QdrantClient {
         collection_name: &str,
         file_name: &str,
     ) -> Result<(), VectorDBError> {
+        // SRP violation -> should be in a different place
         let mut points: Vec<PointStruct> = vec![];
-
         for (index, vector) in vectors.iter().enumerate() {
             let file_name_with_chunk = format!("{}_chunk_{}", file_name, index);
             let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, file_name_with_chunk.as_bytes());

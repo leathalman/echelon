@@ -1,7 +1,8 @@
-use crate::vectordb::VectorDatabaseType;
-use fastembed::TextEmbedding;
-
+mod llm;
 mod vectordb;
+
+use crate::vectordb::VectorDBType;
+use fastembed::TextEmbedding;
 
 #[tokio::main]
 async fn main() {
@@ -14,7 +15,7 @@ async fn main() {
     println!("Embeddings length: {}", embeddings.len());
     println!("Embeddings dimension: {}", embeddings[0].len());
 
-    let client = match vectordb::build(VectorDatabaseType::Qdrant) {
+    let client = match vectordb::build(VectorDBType::Qdrant) {
         Ok(client) => client,
         Err(err) => {
             println!("{}", err);
