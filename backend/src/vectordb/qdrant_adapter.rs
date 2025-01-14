@@ -4,8 +4,8 @@ use crate::vectordb::vector_store::{
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel, TextEmbedding};
 use qdrant_client::qdrant::{
-    CreateCollectionBuilder, Distance, QueryPointsBuilder, ScalarQuantizationBuilder,
-    VectorParamsBuilder,
+    CreateCollectionBuilder, Distance, PointStruct, QueryPointsBuilder, ScalarQuantizationBuilder,
+    UpsertPointsBuilder, VectorParamsBuilder,
 };
 use qdrant_client::Qdrant;
 
@@ -102,45 +102,25 @@ impl VectorStore for QdrantAdapter {
     async fn add_vectors(
         &self,
         collection_name: &str,
-        vectors: Vec<Embedding>,
-        payload: Vec<&str>,
+        points: Vec<VectorStorePoint>,
     ) -> Result<VectorStoreResponse, VectorStoreError> {
-        todo!()
-        // // SRP violation -> should be in a different place
-        // let mut points: Vec<PointStruct> = vec![];
-        // for (index, vector) in vectors.iter().enumerate() {
-        //     let file_name_with_chunk = format!("{}_chunk_{}", file_name, index);
-        //     let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, file_name_with_chunk.as_bytes());
-        //
-        //     // get payload
-        //     let chunk = payload[index];
-        //
-        //     // construct point struct and push
-        //     points.push(PointStruct::new(
-        //         uuid.to_string(),
-        //         vector.to_vec(),
-        //         [
-        //             ("content", chunk.into()),
-        //             ("name", file_name_with_chunk.into()),
-        //         ],
-        //     ));
-        // }
-        //
-        // match self
-        //     .client
-        //     .upsert_points(UpsertPointsBuilder::new(collection_name, points).wait(true))
-        //     .await
-        // {
-        //     Ok(response) => {
-        //         if response.result.is_some() {
-        //             Ok(())
-        //         } else {
-        //             Err(VectorDBError::GenericError(
-        //                 "Error uploading vectors to Qdrant".to_string(),
-        //             ))
-        //         }
-        //     }
-        //     Err(err) => Err(VectorDBError::GenericError(err.to_string())),
-        // }
+        let converted_points: Vec<PointStruct> = points
+            .into_iter()
+            .map(|p| p.to_point_struct())
+            .collect::<Result<Vec<_>, _>>()?;
+
+        match self
+            .client
+            .upsert_points(UpsertPointsBuilder::new(collection_name, converted_points).wait(true))
+            .await
+        {
+            Ok(response) => Ok(VectorStoreResponse {
+                time: response.time,
+            }),
+            Err(e) => Err(VectorStoreError::Message(format!(
+                "Qdrant upsert vectors failed: {}",
+                e.to_string()
+            ))),
+        }
     }
 }

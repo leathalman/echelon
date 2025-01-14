@@ -1,12 +1,13 @@
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel};
 use qdrant_client::prelude::point_id::PointIdOptions;
-use qdrant_client::qdrant::ScoredPoint;
 use qdrant_client::qdrant::value::Kind;
+use qdrant_client::qdrant::{PointStruct, ScoredPoint, Value, Vectors};
+use std::collections::HashMap;
 use thiserror::Error;
 
 pub enum VectorStoreType {
-    Qdrant
+    Qdrant,
 }
 
 #[async_trait]
@@ -24,8 +25,7 @@ pub trait VectorStore {
     async fn add_vectors(
         &self,
         collection_name: &str,
-        vectors: Vec<Embedding>,
-        payload: Vec<&str>,
+        points: Vec<VectorStorePoint>,
     ) -> Result<VectorStoreResponse, VectorStoreError>;
 }
 
@@ -40,7 +40,8 @@ pub struct VectorStorePoint {
     pub content: Option<String>,
     // maps to 'name' key in DB
     pub name: Option<String>,
-    pub score: f32,
+    pub vector: Option<Vec<f32>>,
+    pub score: Option<f32>,
 }
 
 impl VectorStorePoint {
@@ -51,15 +52,18 @@ impl VectorStorePoint {
                 uuid
             } else {
                 return Err(VectorStoreError::Message(
-                    "PointStruct Conversion Error: Point ID is not a UUID.".to_string(),
+                    "ScoredPoint Conversion Error: Point ID is not a UUID.".to_string(),
                 ));
             }
         } else {
             return Err(VectorStoreError::Message(
-                "PointStruct Conversion Error: PointID is None.".to_string(),
+                "ScoredPoint Conversion Error: PointID is None.".to_string(),
             ));
         };
 
+        /* TODO: look into generalizing 'content' and 'name' keys - don't love that they are hardcoded strings
+          Perhaps an enum is a better idea: 'VectorStorePayloadKeys'
+        */
         let content = scored_point
             .payload
             .get("content")
@@ -68,7 +72,9 @@ impl VectorStorePoint {
                 _ => None,
             })
             .ok_or_else(|| {
-                VectorStoreError::Message("Missing or invalid 'content' field".to_string())
+                VectorStoreError::Message(
+                    "ScoredPoint Conversion Error: Missing or invalid 'content' field".to_string(),
+                )
             })?;
 
         let name = scored_point
@@ -79,15 +85,59 @@ impl VectorStorePoint {
                 _ => None,
             })
             .ok_or_else(|| {
-                VectorStoreError::Message("Missing or invalid 'name' field".to_string())
+                VectorStoreError::Message(
+                    "ScoredPoint Conversion Error: Missing or invalid 'name' field".to_string(),
+                )
             })?;
 
         Ok(VectorStorePoint {
             id: Some(id),
             content: Some(content),
             name: Some(name),
-            score: scored_point.score,
+            score: Some(scored_point.score),
+            vector: None,
         })
+    }
+
+    // TODO: hardcoded keys for VectorStore, should generalize
+    pub fn to_point_struct(self) -> Result<PointStruct, VectorStoreError> {
+        let id = if let Some(val) = self.id {
+            val
+        } else {
+            return Err(VectorStoreError::Message(
+                "PointStruct Conversion Error: ID is none.".to_string(),
+            ));
+        };
+
+        let vectors = if let Some(val) = self.vector {
+            val
+        } else {
+            return Err(VectorStoreError::Message(
+                "PointStruct Conversion Error: Vectors are none.".to_string(),
+            ));
+        };
+
+        let name = if let Some(val) = self.name {
+            val
+        } else {
+            return Err(VectorStoreError::Message(
+                "PointStruct Conversion Error: Name is none.".to_string(),
+            ));
+        };
+
+        let content = if let Some(val) = self.content {
+            val
+        } else {
+            return Err(VectorStoreError::Message(
+                "PointStruct Conversion Error: Content is none.".to_string(),
+            ));
+        };
+
+        let mut payload: HashMap<String, Value> = HashMap::new();
+        payload.insert("content".to_string(), content.into());
+        payload.insert("name".to_string(), name.into());
+
+        Ok(PointStruct::new(id, Vectors::from(vectors), payload))
     }
 }
 
