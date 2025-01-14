@@ -31,7 +31,7 @@ impl InferenceRequest {
 pub struct InferenceOptions {
     // Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)
     pub num_predict: Option<i32>,
-    // Sets the size of the context window used to generate the next token. (Default: 2048)
+    // Sets the size of the context window used to generate the next token. (Default: 4096)
     pub num_ctx: Option<u32>,
     // The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)
     pub temperature: Option<f32>,

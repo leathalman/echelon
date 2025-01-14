@@ -10,4 +10,6 @@ pub enum Model {
     Phi4,
     #[strum(serialize = "gpt-4o-2024-08-06")]
     GPT4o,
+    #[strum(serialize = "bespoke-minicheck")]
+    BespokeMinicheck,
 }

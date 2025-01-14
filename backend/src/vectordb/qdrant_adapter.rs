@@ -3,8 +3,10 @@ use crate::vectordb::vector_store::{
 };
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel, TextEmbedding};
-use qdrant_client::prelude::PointStruct;
-use qdrant_client::qdrant::{CreateCollectionBuilder, Distance, QueryPointsBuilder, ScalarQuantizationBuilder, UpsertPointsBuilder, VectorParamsBuilder};
+use qdrant_client::qdrant::{
+    CreateCollectionBuilder, Distance, QueryPointsBuilder, ScalarQuantizationBuilder,
+    VectorParamsBuilder,
+};
 use qdrant_client::Qdrant;
 
 const QDRANT_URL: &str = "http://localhost:6334";
