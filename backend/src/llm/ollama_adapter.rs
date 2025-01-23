@@ -1,6 +1,5 @@
-use crate::llm::inference::{
-    Inference, InferenceError, InferenceOptions, InferenceRequest, InferenceResponse,
-};
+use crate::error::InferenceError;
+use crate::llm::inference::{Inference, InferenceOptions, InferenceRequest, InferenceResponse};
 use crate::llm::model::Model;
 use async_trait::async_trait;
 use ollama_rs::generation::completion::request::GenerationRequest;

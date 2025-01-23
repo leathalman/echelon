@@ -1,10 +1,10 @@
+use crate::error::VectorStoreError;
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel};
 use qdrant_client::prelude::point_id::PointIdOptions;
 use qdrant_client::qdrant::value::Kind;
 use qdrant_client::qdrant::{PointStruct, ScoredPoint, Value, Vectors};
 use std::collections::HashMap;
-use thiserror::Error;
 
 pub enum VectorStoreType {
     Qdrant,
@@ -145,10 +145,4 @@ impl VectorStorePoint {
 pub struct VectorStoreQueryResponse {
     pub time: f64,
     pub points: Vec<VectorStorePoint>,
-}
-
-#[derive(Debug, Error)]
-pub enum VectorStoreError {
-    #[error("VectorStore error occurred: {0}")]
-    Message(String),
 }

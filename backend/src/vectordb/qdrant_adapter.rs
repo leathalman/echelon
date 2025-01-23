@@ -1,5 +1,6 @@
+use crate::error::VectorStoreError;
 use crate::vectordb::vector_store::{
-    VectorStore, VectorStoreError, VectorStorePoint, VectorStoreQueryResponse, VectorStoreResponse,
+    VectorStore, VectorStorePoint, VectorStoreQueryResponse, VectorStoreResponse,
 };
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel, TextEmbedding};

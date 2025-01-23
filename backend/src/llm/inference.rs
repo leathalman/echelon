@@ -1,5 +1,5 @@
+use crate::error::InferenceError;
 use async_trait::async_trait;
-use thiserror::Error;
 
 #[async_trait]
 pub trait Inference {
@@ -72,10 +72,4 @@ pub struct InferenceResponse {
     pub eval_count: Option<u16>,
     // Time spent in milliseconds generating the response
     pub eval_duration: Option<u64>,
-}
-
-#[derive(Debug, Error)]
-pub enum InferenceError {
-    #[error("Inference error occurred: {0}")]
-    Message(String),
 }
