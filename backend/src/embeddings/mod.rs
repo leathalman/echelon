@@ -123,6 +123,7 @@ fn generate_embedding(content: &str) -> Result<Embedding, EmbeddingError> {
     Ok(embedding)
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
