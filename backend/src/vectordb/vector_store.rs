@@ -35,12 +35,12 @@ pub struct VectorStoreResponse {
 
 #[derive(Debug)]
 pub struct VectorStorePoint {
-    pub id: Option<String>,
+    pub uuid: Option<String>,
     // maps to 'content' key in DB
     pub content: Option<String>,
+    pub embedding: Option<Embedding>,
     // maps to 'name' key in DB
     pub name: Option<String>,
-    pub vector: Option<Vec<f32>>,
     pub score: Option<f32>,
 }
 
@@ -91,17 +91,17 @@ impl VectorStorePoint {
             })?;
 
         Ok(VectorStorePoint {
-            id: Some(id),
+            uuid: Some(id),
             content: Some(content),
             name: Some(name),
             score: Some(scored_point.score),
-            vector: None,
+            embedding: None,
         })
     }
 
     // TODO: hardcoded keys for VectorStore, should generalize
     pub fn to_point_struct(self) -> Result<PointStruct, VectorStoreError> {
-        let id = if let Some(val) = self.id {
+        let id = if let Some(val) = self.uuid {
             val
         } else {
             return Err(VectorStoreError::Message(
@@ -109,7 +109,7 @@ impl VectorStorePoint {
             ));
         };
 
-        let vectors = if let Some(val) = self.vector {
+        let vectors = if let Some(val) = self.embedding {
             val
         } else {
             return Err(VectorStoreError::Message(

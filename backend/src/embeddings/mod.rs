@@ -1,26 +1,30 @@
+use crate::vectordb::vector_store::VectorStorePoint;
 use fancy_regex::Regex;
-use fastembed::{Embedding, EmbeddingModel, InitOptions, TextEmbedding};
-use qdrant_client::qdrant::FieldType::Text;
+use fastembed::{Embedding, TextEmbedding};
 use std::default::Default;
-use std::error::Error;
-use std::fmt::format;
 use std::fs;
-use std::iter::Map;
 use std::path::Path;
-use std::slice::Iter;
 use thiserror::Error;
 use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct TextChunk {
-    uuid: Uuid,
-    content: String,
-    embedding: Embedding,
+    pub uuid: Uuid,
+    pub content: String,
+    pub embedding: Embedding,
+    pub name: String,
 }
 
-pub struct ProcessedFile {
-    file_name: String,
-    chunks: Vec<TextChunk>,
+impl From<TextChunk> for VectorStorePoint {
+    fn from(chunk: TextChunk) -> Self {
+        VectorStorePoint {
+            uuid: Some(chunk.uuid.to_string()),
+            content: Some(chunk.content),
+            embedding: Some(chunk.embedding),
+            name: Some(chunk.name),
+            score: None,
+        }
+    }
 }
 
 #[derive(Debug, Error)]
@@ -29,7 +33,6 @@ pub enum EmbeddingError {
     Message(String),
 }
 
-// process single file into chunks
 pub fn process_file(path: &Path) -> Result<Vec<TextChunk>, EmbeddingError> {
     let markdown = fs::read_to_string(path).map_err(|e| {
         EmbeddingError::Message(format!("Unable to read file at path: {}", e.to_string()))
@@ -46,11 +49,13 @@ pub fn process_file(path: &Path) -> Result<Vec<TextChunk>, EmbeddingError> {
     let mut processed_chunks: Vec<TextChunk> = vec![];
 
     for (idx, chunk) in raw_chunks.iter().enumerate() {
+        let name = format!("{}_{}", file_name, idx);
+
         processed_chunks.push(TextChunk {
-            // name value?
-            uuid: generate_uuid(file_name),
+            uuid: generate_uuid(&name),
             embedding: generate_embedding(chunk)?,
             content: chunk.clone(),
+            name,
         })
     }
 
@@ -95,6 +100,7 @@ fn chunk(str: String) -> Result<Vec<String>, EmbeddingError> {
 
 // uses preset namespace
 fn generate_uuid(name: &str) -> Uuid {
+    println!("NAME IS: {}", name);
     Uuid::new_v5(&Uuid::NAMESPACE_DNS, name.as_bytes())
 }
 
