@@ -6,7 +6,8 @@ use std::fs;
 use std::path::Path;
 use uuid::Uuid;
 
-pub fn process_file(path: &Path) -> Result<Vec<TextChunk>, EmbeddingError> {
+// TODO: Add process directory (not just one file)
+pub fn process_md_file(path: &Path) -> Result<Vec<TextChunk>, EmbeddingError> {
     let markdown = fs::read_to_string(path).map_err(|e| {
         EmbeddingError::Message(format!("Unable to read file at path: {}", e.to_string()))
     })?;
@@ -39,8 +40,8 @@ pub fn process_file(path: &Path) -> Result<Vec<TextChunk>, EmbeddingError> {
 pub fn chunk(str: String) -> Result<Vec<String>, EmbeddingError> {
     // REGEX: (?m)(?=^# (?!#))
     // NOTE: requires newline before title to work
-    // # Title 1\n# Title 2 => ["", "# Title 1\n", "# Title 2"]
-    // # Title 1# Title 2 => ["", "# Title 1# Title 2"]
+    // # Title 1\n# Title 2 => ["# Title 1\n", "# Title 2"]
+    // # Title 1# Title 2 => ["# Title 1# Title 2"]
 
     let reg = Regex::new(r"(?m)(?=^# (?!#))").map_err(|e| {
         EmbeddingError::Message(format!(
@@ -71,17 +72,16 @@ pub fn chunk(str: String) -> Result<Vec<String>, EmbeddingError> {
     }
 }
 
-// uses preset namespace
 pub fn generate_uuid(name: &str) -> Uuid {
     println!("NAME IS: {}", name);
     Uuid::new_v5(&Uuid::NAMESPACE_DNS, name.as_bytes())
 }
 
-// TODO: initializes a new embedding model for each run, this can be improved
-// TODO: runs single embedding at a time, slower than needed, batching would be better, esp since
+// TODO: initializes a new embeddings model for each run, this can be improved
+// TODO: runs single embeddings at a time, slower than needed, batching would be better, esp since
 pub fn generate_embedding(content: &str) -> Result<Embedding, EmbeddingError> {
     let model = TextEmbedding::try_new(Default::default()).map_err(|e| {
-        EmbeddingError::Message(format!("Could not initialize embedding model: {}", e))
+        EmbeddingError::Message(format!("Could not initialize embeddings model: {}", e))
     })?;
 
     let embeddings = model
@@ -91,7 +91,7 @@ pub fn generate_embedding(content: &str) -> Result<Embedding, EmbeddingError> {
     let embedding = embeddings
         .get(0)
         .cloned()
-        .ok_or_else(|| EmbeddingError::Message("No embedding found".to_string()))?;
+        .ok_or_else(|| EmbeddingError::Message("No embeddings found".to_string()))?;
 
     Ok(embedding)
 }

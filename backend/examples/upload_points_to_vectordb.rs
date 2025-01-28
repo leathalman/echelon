@@ -1,4 +1,4 @@
-use backend::embeddings::process_file;
+use backend::embeddings::process_md_file;
 use backend::vectordb;
 use backend::vectordb::vector_store::VectorStoreType;
 use backend::vectordb::vector_store::{VectorStore, VectorStorePoint};
@@ -16,7 +16,7 @@ async fn main() {
 
     let path = Path::new("./data/John_V_Roach_Honors_College.md");
 
-    let chunks: Vec<VectorStorePoint> = process_file(path)
+    let chunks: Vec<VectorStorePoint> = process_md_file(path)
         .unwrap()
         .into_iter()
         .map(|chunk| chunk.into())
