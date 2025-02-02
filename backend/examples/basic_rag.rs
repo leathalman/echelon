@@ -1,38 +1,39 @@
-use backend::llm::inference::Inference;
-use backend::llm::inference::InferenceRequest;
-use backend::llm::model::Model;
+use backend::storage::vector::VectorStorage;
+use std::error::Error;
+use std::time::Instant;
+use backend::llm::inference;
+use backend::processing::embedding::*;
 use backend::prompt::Prompt;
-use backend::vectordb::vector_store::VectorStore;
-use backend::vectordb::vector_store::VectorStoreType;
-use backend::{embeddings, llm, vectordb};
+use backend::storage;
+use backend::storage::backends::VectorStorageBackend;
+use backend::llm::inference::*;
+use backend::llm::model::Model;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn Error>> {
+    // RAG implementation
+
     let query = "What are the different distinctions in the honors college?";
 
-    // embed query
-    let query_embedded = embeddings::generate_embedding(query).unwrap();
+    let embedded_query = embed(query.to_string())?;
 
-    // sim search
-    let vectordb = vectordb::build(VectorStoreType::Qdrant).unwrap();
+    let vectordb = storage::vector::build(VectorStorageBackend::Qdrant)?;
 
     let search_result = vectordb
-        .query("test_collection", query_embedded)
-        .await
-        .unwrap();
+        .query("test_collection", embedded_query)
+        .await?;
 
     let mut context = String::new();
+
     search_result.points.into_iter().take(5).for_each(|point| {
-        if let Some(content) = point.content {
-            context.push_str(&content)
-        } else {
-            println!("VectorStorePoint Error: No 'content' found in point");
-        }
+        context.push_str(&point.content)
     });
 
     let prompt = Prompt::new().question(query.to_string()).context(context);
 
-    let llm = llm::build(Model::Llama3_11b);
+    let start_time = Instant::now();
+
+    let llm = inference::build(Model::Llama3_11b);
 
     println!("Prompt: {}", prompt.clone().to_string());
 
@@ -42,4 +43,12 @@ async fn main() {
         .unwrap();
 
     println!("LLM Response: {}", response.content);
+
+    let end_time = Instant::now();
+
+    let elapsed_time = end_time.duration_since(start_time);
+
+    println!("Elapsed time: {:.2?}", elapsed_time);
+
+    Ok(())
 }

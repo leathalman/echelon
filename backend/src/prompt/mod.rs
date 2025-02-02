@@ -4,6 +4,7 @@ const INSTRUCTION: &str = "You are a helpful assistant. \
 Provide answers using only the given context without mentioning that you were given context. \
 Feel free to use as much information in the given context as you want.";
 
+// TODO: forgot about chat history here...
 #[derive(Clone)]
 pub struct Prompt {
     // what is passed to the model (instruction + context + question)

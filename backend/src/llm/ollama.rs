@@ -1,5 +1,6 @@
-use crate::error::InferenceError;
-use crate::llm::inference::{Inference, InferenceOptions, InferenceRequest, InferenceResponse};
+use crate::llm::inference::{
+    Inference, InferenceError, InferenceOptions, InferenceRequest, InferenceResponse,
+};
 use crate::llm::model::Model;
 use async_trait::async_trait;
 use ollama_rs::generation::completion::request::GenerationRequest;
@@ -36,12 +37,12 @@ impl InferenceRequest {
 
 impl InferenceResponse {
     fn new(response: GenerationResponse) -> InferenceResponse {
-        let eval_duration = response.eval_duration.map(|duration| duration / 1_000_000);
+        let generation_time = response.eval_duration.map(|duration| duration / 1_000_000);
 
         Self {
             content: response.response,
-            eval_count: response.eval_count,
-            eval_duration,
+            token_count: response.eval_count,
+            generation_time,
         }
     }
 }
@@ -50,8 +51,8 @@ impl From<InferenceOptions> for GenerationOptions {
     fn from(options: InferenceOptions) -> Self {
         GenerationOptions::default()
             // all properties set by default constructor of InferenceOptions, unwrap should be safe here
-            .num_predict(options.num_predict.unwrap())
-            .num_ctx(options.num_ctx.unwrap())
+            .num_predict(options.max_tokens.unwrap())
+            .num_ctx(options.context_window.unwrap())
             .temperature(options.temperature.unwrap())
     }
 }
