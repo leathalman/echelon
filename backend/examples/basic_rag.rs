@@ -3,11 +3,11 @@ use std::error::Error;
 use std::time::Instant;
 use backend::llm::inference;
 use backend::processing::embedding::*;
-use backend::prompt::Prompt;
 use backend::storage;
 use backend::storage::backends::VectorStorageBackend;
 use backend::llm::inference::*;
 use backend::llm::model::Model;
+use backend::llm::prompt::Prompt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -28,8 +28,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     search_result.points.into_iter().take(5).for_each(|point| {
         context.push_str(&point.content)
     });
-
-    let prompt = Prompt::new().question(query.to_string()).context(context);
+    
+    let prompt = Prompt::new(context, query.to_string());
 
     let start_time = Instant::now();
 
