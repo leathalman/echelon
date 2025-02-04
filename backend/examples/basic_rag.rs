@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     search_result.points.into_iter().take(5).for_each(|point| {
         context.push_str(&point.content)
     });
-    
+
     let prompt = Prompt::new(context, query.to_string());
 
     let start_time = Instant::now();
