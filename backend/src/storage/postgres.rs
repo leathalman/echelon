@@ -1,0 +1,124 @@
+use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::types::time::OffsetDateTime;
+use std::error::Error;
+use sqlx::query_as;
+
+#[derive(sqlx::Type, Debug)]
+#[sqlx(type_name = "chat.message_role", rename_all = "lowercase")]
+pub enum MessageRole {
+    User,
+    Assistant,
+}
+
+#[derive(sqlx::Type, Debug)]
+#[sqlx(type_name = "chat.conversation_status", rename_all = "lowercase")]
+pub enum ConversationStatus {
+    Active,
+    Archived,
+    Starred,
+    System,
+}
+
+#[derive(Debug)]
+pub struct User {
+    pub id: i32,
+    pub student_id: String,
+    pub email: String,
+    pub password_hash: String,
+    pub created_at: OffsetDateTime,
+    pub last_login_at: OffsetDateTime,
+}
+
+#[derive(Debug)]
+pub struct Conversation {
+    pub id: i32,
+    pub owner_id: i32,
+    pub title: String,
+    pub last_message_at: OffsetDateTime,
+    pub status: ConversationStatus,
+}
+
+#[derive(Debug)]
+pub struct Message {
+    pub id: i32,
+    pub conversation_id: i32,
+    pub content: String,
+    pub role: MessageRole,
+    pub created_at: OffsetDateTime,
+}
+
+pub struct PostgresAdapter {
+    pool: PgPool,
+}
+
+impl PostgresAdapter {
+    pub async fn new(database_url: &str) -> Result<Self, Box<dyn Error>> {
+        let pool = PgPoolOptions::new()
+            .max_connections(10)
+            .connect(database_url)
+            .await?;
+
+        Ok(PostgresAdapter {
+            pool
+        })
+    }
+
+    // MARK: may not need to return anything here besides status indicator, TBD...
+    pub async fn create_user(&self, student_id: &str, email: &str, password_hash: &str) -> Result<User, sqlx::Error> {
+        sqlx::query_as!(
+            User,
+            r#"
+            INSERT INTO chat.users (student_id, email, password_hash)
+            VALUES ($1, $2, $3)
+            RETURNING id, student_id, email, password_hash, created_at, last_login_at
+            "#,
+            student_id,
+            email,
+            password_hash
+        )
+            .fetch_one(&self.pool)
+            .await
+    }
+
+    pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
+        sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM chat.users WHERE email = $1
+            "#,
+            email
+        )
+            .fetch_optional(&self.pool)
+            .await
+    }
+
+    pub async fn create_conversation(&self, owner_id: i32, title: &str) -> Result<Conversation, sqlx::Error> {
+        sqlx::query_as!(
+            Conversation,
+            r#"
+            INSERT INTO chat.conversations (owner_id, title)
+            VALUES ($1, $2)
+            RETURNING id, owner_id, title, last_message_at, status as "status!: ConversationStatus"
+            "#,
+            owner_id,
+            title
+        )
+            .fetch_one(&self.pool)
+            .await
+    }
+
+    pub async fn get_user_conversations(&self, user_id: i32) -> Result<Vec<Conversation>, sqlx::Error> {
+        sqlx::query_as!(
+            Conversation,
+            r#"
+            SELECT id, owner_id, title, last_message_at, status as "status:_"
+            FROM chat.conversations
+            WHERE owner_id = $1
+            ORDER BY last_message_at
+            "#,
+            user_id
+        )
+            .fetch_all(&self.pool)
+            .await
+    }
+}
