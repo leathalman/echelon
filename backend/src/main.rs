@@ -1,9 +1,7 @@
-use std::env;
+use backend::storage::postgres::{MessageRole, PostgresAdapter};
 use dotenv::dotenv;
+use std::env;
 use std::error::Error;
-use sqlx::Postgres;
-use backend::storage;
-use backend::storage::postgres::PostgresAdapter;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -20,13 +18,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let conversation = db.create_conversation(user.id, "Asteroids are cool!").await?;
     // let conversation2 = db.create_conversation(user.id, "What is Rust anyways?").await?;
     //
-    let conversations = db.get_user_conversations(1).await?;
+    // let conversations = db.get_user_conversations(1).await?;
 
+    // let message = db
+    //     .create_message(1, "I don't know about that...", MessageRole::Assistant)
+    //     .await?;
+
+    let messages = db.get_conversation_messages(1).await?;
 
     // println!("{:?}", user);
-    
-    println!("{:?}", conversations);
 
+    println!("{:?}", messages);
 
     Ok(())
 }

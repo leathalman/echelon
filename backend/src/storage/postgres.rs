@@ -1,7 +1,6 @@
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use sqlx::types::time::OffsetDateTime;
 use std::error::Error;
-use sqlx::query_as;
 
 #[derive(sqlx::Type, Debug)]
 #[sqlx(type_name = "chat.message_role", rename_all = "lowercase")]
@@ -58,13 +57,16 @@ impl PostgresAdapter {
             .connect(database_url)
             .await?;
 
-        Ok(PostgresAdapter {
-            pool
-        })
+        Ok(PostgresAdapter { pool })
     }
 
     // MARK: may not need to return anything here besides status indicator, TBD...
-    pub async fn create_user(&self, student_id: &str, email: &str, password_hash: &str) -> Result<User, sqlx::Error> {
+    pub async fn create_user(
+        &self,
+        student_id: &str,
+        email: &str,
+        password_hash: &str,
+    ) -> Result<User, sqlx::Error> {
         sqlx::query_as!(
             User,
             r#"
@@ -92,7 +94,11 @@ impl PostgresAdapter {
             .await
     }
 
-    pub async fn create_conversation(&self, owner_id: i32, title: &str) -> Result<Conversation, sqlx::Error> {
+    pub async fn create_conversation(
+        &self,
+        owner_id: i32,
+        title: &str,
+    ) -> Result<Conversation, sqlx::Error> {
         sqlx::query_as!(
             Conversation,
             r#"
@@ -107,7 +113,10 @@ impl PostgresAdapter {
             .await
     }
 
-    pub async fn get_user_conversations(&self, user_id: i32) -> Result<Vec<Conversation>, sqlx::Error> {
+    pub async fn get_user_conversations(
+        &self,
+        user_id: i32,
+    ) -> Result<Vec<Conversation>, sqlx::Error> {
         sqlx::query_as!(
             Conversation,
             r#"
@@ -117,6 +126,53 @@ impl PostgresAdapter {
             ORDER BY last_message_at
             "#,
             user_id
+        )
+            .fetch_all(&self.pool)
+            .await
+    }
+
+    pub async fn create_message(
+        &self,
+        conversation_id: i32,
+        content: &str,
+        role: MessageRole,
+    ) -> Result<Message, sqlx::Error> {
+        sqlx::query_as!(
+            Message,
+            r#"
+                WITH new_message AS (
+                INSERT INTO chat.messages (conversation_id, content, role)
+                VALUES ($1, $2, $3)
+                RETURNING id, conversation_id, content, role as "role!: MessageRole", created_at
+            ),
+            update_conversation AS (
+                UPDATE chat.conversations 
+                SET last_message_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+            )
+            SELECT * FROM new_message
+            "#,
+            conversation_id,
+            content,
+            role as MessageRole
+        )
+            .fetch_one(&self.pool)
+            .await
+    }
+
+    pub async fn get_conversation_messages(
+        &self,
+        conversation_id: i32,
+    ) -> Result<Vec<Message>, sqlx::Error> {
+        sqlx::query_as!(
+            Message,
+            r#"
+            SELECT id, conversation_id, content, role as "role!: MessageRole", created_at
+            FROM chat.messages
+            WHERE conversation_id = $1
+            ORDER BY created_at ASC
+            "#,
+            conversation_id
         )
             .fetch_all(&self.pool)
             .await
