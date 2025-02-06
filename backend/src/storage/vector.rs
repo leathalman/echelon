@@ -1,8 +1,11 @@
-use crate::storage::backends::VectorStorageBackend;
 use crate::storage::qdrant::QdrantAdapter;
 use async_trait::async_trait;
 use fastembed::{Embedding, EmbeddingModel};
 use thiserror::Error;
+
+pub enum VectorStorageBackend {
+    Qdrant,
+}
 
 #[async_trait]
 pub trait VectorStorage {

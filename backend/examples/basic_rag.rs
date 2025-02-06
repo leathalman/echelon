@@ -1,10 +1,9 @@
-use backend::storage::vector::VectorStorage;
+use backend::storage::vector::{VectorStorage, VectorStorageBackend};
 use std::error::Error;
 use std::time::Instant;
 use backend::llm::inference;
 use backend::processing::embedding::*;
 use backend::storage;
-use backend::storage::backends::VectorStorageBackend;
 use backend::llm::inference::*;
 use backend::llm::model::Model;
 use backend::llm::prompt::Prompt;

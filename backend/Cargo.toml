@@ -9,7 +9,7 @@ fastembed = "4.3.0"
 ollama-rs = { version = "0.2.2", features = ["stream"] }
 qdrant-client = "1.12.1"
 thiserror = "2.0.9"
-tokio = { version = "1.42.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.42.0", features = ["full"] }
 uuid = { version = "1.11.0", features = ["fast-rng", "macro-diagnostics", "v4", "v5"] }
 strum = "0.26.3"
 strum_macros = "0.26.4"
@@ -17,7 +17,6 @@ fancy-regex = "0.14.0"
 once_cell = "1.18"
 sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "time"] }
 dotenv = "0.15.0"
-anyhow = "1.0.95"
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3

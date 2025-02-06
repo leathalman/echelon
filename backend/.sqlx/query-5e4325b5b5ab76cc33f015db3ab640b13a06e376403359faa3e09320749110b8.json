@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO chat.conversations (owner_id, title)\n            VALUES ($1, $2)\n            RETURNING id, owner_id, title, last_message_at, status as \"status!: ConversationStatus\"\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "owner_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_message_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "status!: ConversationStatus",
+        "type_info": {
+          "Custom": {
+            "name": "chat.conversation_status",
+            "kind": {
+              "Enum": [
+                "active",
+                "archived",
+                "starred",
+                "system"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5e4325b5b5ab76cc33f015db3ab640b13a06e376403359faa3e09320749110b8"
+}
