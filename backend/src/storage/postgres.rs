@@ -46,21 +46,20 @@ pub struct Message {
     pub created_at: OffsetDateTime,
 }
 
-pub struct PostgresAdapter {
+pub struct RelationalStorage {
     pool: PgPool,
 }
 
-impl PostgresAdapter {
+impl RelationalStorage {
     pub async fn new(database_url: &str) -> Result<Self, Box<dyn Error>> {
         let pool = PgPoolOptions::new()
             .max_connections(10)
             .connect(database_url)
             .await?;
 
-        Ok(PostgresAdapter { pool })
+        Ok(RelationalStorage { pool })
     }
 
-    // MARK: may not need to return anything here besides status indicator, TBD...
     pub async fn create_user(
         &self,
         student_id: &str,

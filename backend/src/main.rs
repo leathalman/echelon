@@ -1,4 +1,4 @@
-use backend::storage::postgres::{MessageRole, PostgresAdapter};
+use backend::storage::postgres::{MessageRole, RelationalStorage};
 use dotenv::dotenv;
 use std::env;
 use std::error::Error;
@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let db_url = env::var("DATABASE_URL")?;
 
-    let db = PostgresAdapter::new(&db_url).await?;
+    let db = RelationalStorage::new(&db_url).await?;
 
     // let user = db.create_user("123456", "hleath@me.com", "hash").await?;
 
