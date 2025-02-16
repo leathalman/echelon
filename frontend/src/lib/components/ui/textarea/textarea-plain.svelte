@@ -14,9 +14,7 @@
 <textarea
 	bind:this={ref}
 	class={cn(
-		"outline-none bg-background placeholder:text-muted-foreground " +
-		 "flex min-h-[50px] w-full rounded-md px-3 py-2 " +
-		   "disabled:cursor-not-allowed disabled:opacity-50",
+		"outline-none bg-background flex min-h-[50px] rounded-lg",
 		className
 	)}
 	bind:value

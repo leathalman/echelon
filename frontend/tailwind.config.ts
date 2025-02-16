@@ -72,10 +72,10 @@ const config: Config = {
 				sans: ['"Figtree"', ...fontFamily.sans]
 			},
 			width: {
-				'176': '44rem'
+				'156': '39rem'
 			},
 			maxWidth: {
-				'176': '44rem'
+				'156': '39rem'
 			}
 		}
 	}
