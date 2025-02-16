@@ -34,51 +34,23 @@
 	];
 	const chatHistory = [
 		{
-			title: 'Lorem ipsum dolor sit amet, consectetur adipiscing',
-			url: '/chat-1'
+			title: 'Semester Planning Summary',
+			url: '/chat/1'
 		},
 		{
-			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			title: 'Adding Math Double Major',
 			url: '/chat-2'
 		},
 		{
-			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+			title: 'Review  Syllabus for COSC 30023',
 			url: '/chat-3'
 		},
 		{
-			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
-			url: '/chat-4'
-		},
-		{
-			title: 'Molestie fames magna aptent vivamus nostra litora sapien condimentum. Sit curabitur sociosqu inceptos iaculis lacinia',
+			title: 'Projected Performance for MATH 40021',
 			url: '/chat-5'
 		},
 		{
-			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
-			url: '/chat-2'
-		},
-		{
-			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
-			url: '/chat-3'
-		},
-		{
-			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
-			url: '/chat-4'
-		},
-		{
-			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
-			url: '/chat-2'
-		},
-		{
-			title: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
-			url: '/chat-3'
-		},
-		{
-			title: 'Est eros aenean sapien vestibulum odio lobortis. Augue ipsum conubia molestie posuere potenti donec.',
-			url: '/chat-4'
-		},
-		{
-			title: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex',
+			title: 'Syllabi Comparison for MUSI 12002 and',
 			url: '/chat-2'
 		}
 	];
@@ -87,15 +59,13 @@
 <Sidebar.Root class="pl-0.5">
 	<Sidebar.Header>
 		<div class="flex flex-row justify-between items-center px-1 py-2 h-14">
-			<Button variant="outline" size="icon">
-				<Sidebar.Trigger />
-			</Button>
+			<Sidebar.Trigger variant="outline" class="h-9 w-9" />
 			<div class="flex flex-row space-x-3">
-				<Button variant="outline" size="icon">
-					<Search size={10} />
+				<Button variant="outline" class="h-9 w-9">
+					<Search />
 				</Button>
-				<Button variant="default" size="icon">
-					<CirclePlus size={10} />
+				<Button variant="default" size="icon" class="h-9 w-9">
+					<CirclePlus />
 				</Button>
 			</div>
 		</div>
@@ -142,7 +112,7 @@
 	<Sidebar.Footer>
 		<div class="flex flex-row space-x-3 px-1 py-2 rounded">
 			<Avatar.Root>
-				<Avatar.Image src="https://github.com/shadcn.png" alt="@shadcn" />
+				<Avatar.Image src="https://avatars.githubusercontent.com/u/11728008?v=4" alt="@shadcn" />
 				<Avatar.Fallback>CN</Avatar.Fallback>
 			</Avatar.Root>
 			<div class="flex flex-col leading-tight">

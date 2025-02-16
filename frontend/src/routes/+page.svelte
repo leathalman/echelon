@@ -1,5 +1,4 @@
 <script lang="ts">
-	import temp from '/static/temp_logo.svg';
 	import Plain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
@@ -7,7 +6,7 @@
 
 <div class="flex flex-col basis-[75%] justify-center items-center space-y-5">
 	<div class="w-[90%] md:max-w-156 items-start flex flex-col space-y-4">
-		<img src={temp} width="25" height="25" alt="Temp Icon" />
+		<img src="/temp_logo.svg" width="25" height="25" alt="Temp Icon" />
 		<span class="text-lg">Good Morning, Harrison.</span>
 	</div>
 	<div
