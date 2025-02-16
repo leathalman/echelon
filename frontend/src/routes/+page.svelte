@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Plain from '$lib/components/ui/textarea/textarea-plain.svelte';
+	import TextareaPlain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 </script>
@@ -10,13 +10,13 @@
 		<span class="text-lg">Good Morning, Harrison.</span>
 	</div>
 	<div
-		class="w-[90%] md:max-w-156 flex flex-col rounded-lg h-32
+		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
 					shadow-lg border border-black">
-		<Plain class="text-lg font-semibold mx-1 px-2 my-2 placeholder-opacity-5"
-					 placeholder="How can I help?"></Plain>
-		<div class="flex w-full h-full justify-end items-end py-2 px-2">
+		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
+									 placeholder="How can I help?"></TextareaPlain>
+		<div class="flex w-full justify-end items-end py-2 px-2">
 			<Button class="w-9 h-9">
-				<ArrowRight class="h-4 w-4" />
+				<ArrowRight />
 			</Button>
 		</div>
 	</div>

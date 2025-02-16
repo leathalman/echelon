@@ -9,15 +9,24 @@
 		class: className,
 		...restProps
 	}: WithoutChildren<WithElementRef<HTMLTextareaAttributes>> = $props();
+
+	function updateHeight() {
+		if (ref) {
+			ref.style.height = '';
+			ref.style.height = ref.scrollHeight + 'px';
+		}
+	}
 </script>
 
 <textarea
 	bind:this={ref}
 	class={cn(
-		"outline-none bg-background flex min-h-[50px] rounded-lg",
+		"outline-none bg-background min-h-[25px] rounded-md ",
 		className
 	)}
 	bind:value
 	{...restProps}
 	style="resize: none;"
+	rows="1"
+	oninput={updateHeight}
 ></textarea>

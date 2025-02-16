@@ -23,7 +23,6 @@ type TextareaEvents = {
 export {
 	Root,
 	Plain as TextareaPlain,
-	//
 	Root as Textarea,
 	type TextareaEvents,
 	type FormTextareaEvent
