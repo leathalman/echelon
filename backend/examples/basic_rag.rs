@@ -1,12 +1,12 @@
-use backend::storage::vector::{VectorStorage, VectorStorageBackend};
-use std::error::Error;
-use std::time::Instant;
 use backend::llm::inference;
-use backend::processing::embedding::*;
-use backend::storage;
 use backend::llm::inference::*;
 use backend::llm::model::Model;
 use backend::llm::prompt::Prompt;
+use backend::processing::embedding::*;
+use backend::storage;
+use backend::storage::vector::{VectorStorage, VectorStorageBackend};
+use std::error::Error;
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -18,15 +18,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let vectordb = storage::vector::build(VectorStorageBackend::Qdrant)?;
 
-    let search_result = vectordb
-        .query("test_collection", embedded_query)
-        .await?;
+    let search_result = vectordb.query("test_collection", embedded_query).await?;
 
     let mut context = String::new();
 
-    search_result.points.into_iter().take(5).for_each(|point| {
-        context.push_str(&point.content)
-    });
+    search_result
+        .points
+        .into_iter()
+        .take(5)
+        .for_each(|point| context.push_str(&point.content));
 
     let prompt = Prompt::new(context, query.to_string());
 

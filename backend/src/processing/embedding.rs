@@ -1,6 +1,6 @@
-use std::sync::Arc;
 use fastembed::{Embedding, TextEmbedding};
 use once_cell::sync::OnceCell;
+use std::sync::Arc;
 use thiserror::Error;
 
 // TODO: Look into https://www.reddit.com/r/rust/comments/1iisfzg/lazycell_vs_lazylock_vs_oncecell_vs_oncelock_vs/

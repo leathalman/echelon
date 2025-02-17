@@ -1,6 +1,6 @@
-use sqlx::postgres::{PgPool};
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPool;
 
 #[derive(sqlx::Type, Debug, Serialize, Deserialize)]
 #[sqlx(type_name = "chat.message_role", rename_all = "lowercase")]
@@ -52,7 +52,6 @@ pub struct FilterOptions {
     pub limit: Option<usize>,
 }
 
-
 pub struct RelationalStorage {
     pool: PgPool,
 }
@@ -91,7 +90,7 @@ impl RelationalStorage {
     //         .fetch_one(&self.pool)
     //         .await
     // }
-    // 
+    //
     // pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
     //     sqlx::query_as!(
     //         User,
@@ -103,7 +102,7 @@ impl RelationalStorage {
     //         .fetch_optional(&self.pool)
     //         .await
     // }
-    // 
+    //
     // pub async fn create_conversation(
     //     &self,
     //     owner_id: i32,
@@ -122,7 +121,7 @@ impl RelationalStorage {
     //         .fetch_one(&self.pool)
     //         .await
     // }
-    // 
+    //
     // pub async fn get_user_conversations(
     //     &self,
     //     user_id: i32,
@@ -140,7 +139,7 @@ impl RelationalStorage {
     //         .fetch_all(&self.pool)
     //         .await
     // }
-    // 
+    //
     // pub async fn create_message(
     //     &self,
     //     conversation_id: i32,
@@ -156,7 +155,7 @@ impl RelationalStorage {
     //             RETURNING id, conversation_id, content, role as "role!: MessageRole", created_at
     //         ),
     //         update_conversation AS (
-    //             UPDATE chat.conversations 
+    //             UPDATE chat.conversations
     //             SET last_message_at = CURRENT_TIMESTAMP
     //             WHERE id = $1
     //         )
@@ -169,7 +168,7 @@ impl RelationalStorage {
     //         .fetch_one(&self.pool)
     //         .await
     // }
-    // 
+    //
     // pub async fn get_conversation_messages(
     //     &self,
     //     conversation_id: i32,

@@ -1,21 +1,20 @@
-use chrono::{DateTime, Utc};
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::http::{
+    header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
+    HeaderValue, Method,
+};
 use axum::{Json, Router};
-use backend::storage::postgres::{Conversation};
+use backend::storage::postgres::Conversation;
+use chrono::{DateTime, Utc};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use tracing::{error, info};
+use backend::api::router::{create_router, AppState};
+use tower_http::cors::CorsLayer;
 
-pub struct AppState {
-    db: Pool<Postgres>,
-}
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() {
     // Return error if .env does not exist
     dotenv::dotenv().ok();
 
@@ -25,10 +24,11 @@ async fn main() -> anyhow::Result<()> {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     // Create a single connection pool for SQLx that's shared across the entire application.
-    let db = match PgPoolOptions::new()
+    let pool = match PgPoolOptions::new()
         .max_connections(50)
         .connect(&database_url)
-        .await {
+        .await
+    {
         Ok(pool) => {
             info!("Successfully connected to database");
             pool
@@ -39,59 +39,15 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
-    let app_state = Arc::new(AppState { db });
-    let app = Router::new()
-        .route("/api/health", get(health_checker_handler))
-        .route("/api/conversations", get(convo_list_handler))
-        .with_state(app_state);
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await?;
-    axum::serve(listener, app).await?;
+    // TODO: Do I really need clone() here?
+    let app = create_router(Arc::new(AppState { db: pool.clone() })).layer(cors);
 
-    Ok(())
-}
-
-async fn health_checker_handler() -> impl IntoResponse {
-    const MESSAGE: &str = "Echelon is running :)";
-
-    let json_response = serde_json::json!({
-        "status": "success",
-        "message": MESSAGE
-    });
-
-    Json(json_response)
-}
-
-async fn convo_list_handler(State(state): State<Arc<AppState>>) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let user_id = 1;
-
-    let query_result = sqlx::query_as!(
-            Conversation,
-            r#"
-            SELECT id, owner_id, title, last_message_at as "last_message_at:DateTime<Utc>", status as "status:_"
-            FROM chat.conversations
-            WHERE owner_id = $1
-            ORDER BY last_message_at
-            "#,
-            user_id
-        )
-        .fetch_all(&state.db)
-        .await;
-
-    if query_result.is_err() {
-        let error_response = serde_json::json!({
-            "status": "fail",
-            "message": "Something bad happened while fetching notes..."
-        });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
-    }
-
-    let convos = query_result.unwrap();
-
-    let json_response = serde_json::json!({
-        "results": convos.len(),
-        "convos": convos
-    });
-
-    Ok(Json(json_response))
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
+    axum::serve(listener, app).await.expect("Failed to serve Axum app");
 }
