@@ -6,14 +6,21 @@
 	let {
 		ref = $bindable(null),
 		value = $bindable(),
+		height = $bindable(),
 		class: className,
 		...restProps
-	}: WithoutChildren<WithElementRef<HTMLTextareaAttributes>> = $props();
+	}: WithoutChildren<WithElementRef<TextareaProps>> = $props();
+
+	interface TextareaProps extends HTMLTextareaAttributes {
+		height?: number;
+	}
 
 	function updateHeight() {
 		if (ref) {
 			ref.style.height = '';
-			ref.style.height = ref.scrollHeight + 'px';
+			let newHeight = Math.min(ref.scrollHeight, 192);
+			ref.style.height = newHeight + 'px';
+			height = newHeight;
 		}
 	}
 </script>
@@ -21,7 +28,7 @@
 <textarea
 	bind:this={ref}
 	class={cn(
-		"outline-none bg-background min-h-[25px] rounded-md ",
+		"outline-none bg-background min-h-[25px] ",
 		className
 	)}
 	bind:value

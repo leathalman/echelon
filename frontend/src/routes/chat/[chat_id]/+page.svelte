@@ -4,6 +4,7 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import type { ElementRef } from 'bits-ui/dist/internal/types';
 
 	let question = 'How should I plan my next semester?';
 	let contents =
@@ -87,19 +88,26 @@
 	marked.parse(
 		contents.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, '')
 	);
+
+	let markdownWidth = $state();
+	let textAreaHeight = $state(25);
 </script>
 
-<div class="flex flex-col h-full items-center py-12">
-	<div class="flex flex-col w-[90%] md:max-w-156 space-y-2 overflow-hidden">
+<div class="flex flex-col items-center pt-24">
+	<div bind:clientWidth={markdownWidth} style="margin-bottom: {textAreaHeight + 80}px"
+			 class="flex flex-col w-[90%] md:max-w-156 space-y-2">
 		<span class="text-sm text-gray-600">what are the objectives of the holiday party?</span>
-		<div class="prose">
+		<div class="prose prose-sm">
 			{@html marked(contents)}
 		</div>
 	</div>
-	<div class="w-[90%] md:max-w-156 pb-6 bg-white">
+	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-white">
 		<div class="flex flex-row bg-white rounded-lg shadow-lg border justify-between">
 			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
-				<TextareaPlain class="w-full font-medium" placeholder="What else would you like to know?" />
+				<TextareaPlain
+					bind:height={textAreaHeight}
+					class="w-full font-medium"
+					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">
 				<Button class="w-8 h-8 my-2 mx-2">

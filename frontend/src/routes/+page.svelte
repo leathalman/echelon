@@ -6,7 +6,7 @@
 
 <div class="flex flex-col basis-[75%] justify-center items-center space-y-5">
 	<div class="w-[90%] md:max-w-156 items-start flex flex-col space-y-4">
-		<img src="/temp_logo.svg" width="25" height="25" alt="Temp Icon" />
+		<img alt="Temp Icon" height="25" src="/temp_logo.svg" width="25" />
 		<span class="text-lg">Good Morning, Harrison.</span>
 	</div>
 	<div
