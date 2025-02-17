@@ -26,14 +26,14 @@
 </script>
 
 <textarea
+	{...restProps}
 	bind:this={ref}
+	bind:value
 	class={cn(
-		"outline-none bg-background min-h-[25px] ",
+		"outline-none bg-background min-h-[25px]",
 		className
 	)}
-	bind:value
-	{...restProps}
-	style="resize: none;"
-	rows="1"
 	oninput={updateHeight}
+	rows="1"
+	style="resize: none;"
 ></textarea>

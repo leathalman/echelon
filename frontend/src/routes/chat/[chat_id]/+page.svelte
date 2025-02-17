@@ -4,7 +4,6 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
-	import type { ElementRef } from 'bits-ui/dist/internal/types';
 
 	let question = 'How should I plan my next semester?';
 	let contents =
@@ -101,8 +100,8 @@
 			{@html marked(contents)}
 		</div>
 	</div>
-	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-white">
-		<div class="flex flex-row bg-white rounded-lg shadow-lg border justify-between">
+	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-background">
+		<div class="flex flex-row bg-background rounded-lg shadow-lg border justify-between">
 			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
 				<TextareaPlain
 					bind:height={textAreaHeight}
