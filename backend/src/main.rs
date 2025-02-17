@@ -2,16 +2,11 @@ use axum::http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     HeaderValue, Method,
 };
-use axum::{Json, Router};
-use backend::storage::postgres::Conversation;
-use chrono::{DateTime, Utc};
-use sqlx::postgres::PgPoolOptions;
-use sqlx::{Pool, Postgres};
-use std::sync::Arc;
-use tracing::{error, info};
 use backend::api::router::{create_router, AppState};
+use sqlx::postgres::PgPoolOptions;
+use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-
+use tracing::{error, info};
 
 #[tokio::main]
 async fn main() {
@@ -49,5 +44,7 @@ async fn main() {
     let app = create_router(Arc::new(AppState { db: pool.clone() })).layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    axum::serve(listener, app).await.expect("Failed to serve Axum app");
+    axum::serve(listener, app)
+        .await
+        .expect("Failed to serve Axum app");
 }
