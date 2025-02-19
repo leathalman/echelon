@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
 use axum::{routing::get, Router};
+use axum::routing::post;
 use sqlx::{Pool, Postgres};
 
 use crate::api::conversations::{conversation_list_handler, conversation_list_messages, conversation_new_message_handler};
 use crate::api::health::health_checker_handler;
+use crate::storage::postgres::RelationalStorage;
 
 pub struct AppState {
-    pub db: Pool<Postgres>,
+    pub db: RelationalStorage,
 }
 
 pub fn create_router(app_state: Arc<AppState>) -> Router {
@@ -19,5 +21,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(conversation_list_messages)
                 .post(conversation_new_message_handler),
         )
+        // .route("/api/completions", post(completion_new_handler))
         .with_state(app_state)
 }
