@@ -18,7 +18,9 @@ pub async fn conversation_list_handler(
 
     if query_result.is_err() {
         let error_response = json!({
-            "message": "Something bad happened while fetching notes..."
+            "status": "error",
+            "code": 500,
+            "message": "Failed to fetch conversations"
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
@@ -32,6 +34,36 @@ pub async fn conversation_list_handler(
     Ok(Json(json_response))
 }
 
+/// POST /api/conversation
+pub async fn conversation_new_handler(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<CreateConversationSchema>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    // TODO: hardcoded USER_ID, replace with JWT implementation
+    let query_result = state.db.create_conversation(1, payload.title).await;
+
+    match query_result {
+        Ok(conversation) => {
+            let conversation_response = json!({
+                "conversation_id": conversation.id
+            });
+
+            Ok((StatusCode::CREATED, Json(conversation_response)))
+        }
+        // other errors:     "message": "error returned from database: duplicate key value violates unique constraint \"conversations_pkey\"",
+        
+        Err(e) => {
+            // TODO: make sure this doesn't leak sensitive info
+            let error_response = json!({
+            "status": "error",
+            "code": 500,
+            "message": e.to_string(),
+            });
+            Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
+        }
+    }
+}
+
 /// GET /api/conversation/{conversation_id}/messages
 /// Authorized Endpoint -> JWT Required
 pub async fn conversation_list_messages(
@@ -43,7 +75,9 @@ pub async fn conversation_list_messages(
 
     if query_result.is_err() {
         let error_response = json!({
-            "message": "Something bad happened while fetching messages..."
+            "status": "error",
+            "code": 500,
+            "message": format!("Failed to fetch messages for conversation {}", {conversation_id})
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
@@ -70,24 +104,19 @@ pub async fn conversation_new_message_handler(
     match query_result {
         Ok(message) => {
             let message_response = json!({
-                "message_id": message.id
+                "conversation_id": message.id
             });
 
             Ok((StatusCode::CREATED, Json(message_response)))
         }
         Err(e) => {
-            if e.to_string()
-                .contains("duplicate key value violates unique constraint")
-            {
-                let error_response = json!({
-                    "message": "Message with that title already exists",
-                });
-                return Err((StatusCode::CONFLICT, Json(error_response)));
-            }
-            Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"message": format!("{:?}", e)})),
-            ))
+            // TODO: make sure this doesn't leak sensitive info
+            let error_response = json!({
+            "status": "error",
+            "code": 500,
+            "message": e.to_string(),
+            });
+            Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
         }
     }
 }
@@ -99,4 +128,9 @@ pub async fn conversation_new_message_handler(
 pub struct CreateMessageSchema {
     pub content: String,
     pub role: MessageRole,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateConversationSchema {
+    pub title: String,
 }

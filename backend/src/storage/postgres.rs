@@ -103,7 +103,7 @@ impl RelationalStorage {
     pub async fn create_conversation(
         &self,
         owner_id: i32,
-        title: &str,
+        title: String,
     ) -> Result<Conversation, sqlx::Error> {
         sqlx::query_as!(
             Conversation,
