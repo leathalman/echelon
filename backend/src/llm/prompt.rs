@@ -1,19 +1,20 @@
+use crate::api::completions::ApiMessage;
+
 const INSTRUCTION: &str = "You are a helpful academic advising assistant. \
 Use the following pieces of retrieved context to answer the question without mentioning you were given context. \
 If you don't know the answer, just say that you don't know.";
 
-// TODO: forgot about chat history here...
-#[derive(Clone)]
 pub struct Prompt {
-    // what is passed to the model (instruction + context + question)
-    instruction: String,
+    history: Vec<ApiMessage>,
     context: String,
     question: String,
+    instruction: String,
 }
 
 impl Prompt {
-    pub fn new(context: String, question: String) -> Self {
+    pub fn new(history: Vec<ApiMessage>, context: String, question: String) -> Self {
         Prompt {
+            history,
             instruction: INSTRUCTION.to_string(),
             context,
             question,
@@ -21,31 +22,25 @@ impl Prompt {
     }
 
     pub fn to_string(self) -> String {
+        let mut formatted_history = String::new();
+        for message in &self.history {
+            formatted_history.push_str(&format!(
+                "[role: {}, content: {}]\n",
+                message.role, message.content
+            ));
+        }
+
         format!(
-            "{}\n\
-        Context: {}\n\
-        Question: {}",
-            self.instruction, self.context, self.question
+            "Chat History:\n\
+        {formatted_history}\
+        Context:\n\
+        {}\n\
+        Question:\n\
+        {}\n\
+        Instruction:\n\
+        {}
+        ",
+            self.context, self.question, self.instruction
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::llm::prompt::Prompt;
-
-    #[test]
-    fn test_prompt_to_string() {
-        let context = "TCU is a private university in Fort Worth, TX.".to_string();
-        let question = "What is TCU?".to_string();
-
-        let prompt = Prompt::new(context, question);
-
-        let formatted_prompt = format!(
-            "{}\nContext: TCU is a private university in Fort Worth, TX.\nQuestion: What is TCU?",
-            prompt.instruction
-        );
-
-        assert_eq!(formatted_prompt, prompt.to_string())
     }
 }

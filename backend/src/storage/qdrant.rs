@@ -14,15 +14,13 @@ use qdrant_client::qdrant::{
 use qdrant_client::Qdrant;
 use std::collections::HashMap;
 
-const QDRANT_URL: &str = "http://localhost:6334";
-
 pub struct QdrantAdapter {
     client: Qdrant,
 }
 
 impl QdrantAdapter {
-    pub fn new() -> Result<impl VectorStorage, VectorStorageError> {
-        match Qdrant::from_url(QDRANT_URL).build() {
+    pub fn new(qdrant_url: &str) -> Result<QdrantAdapter, VectorStorageError> {
+        match Qdrant::from_url(qdrant_url).build() {
             Ok(client) => Ok(Self { client }),
             Err(err) => Err(VectorStorageError::Message(format!(
                 "Could not create instance of Qdrant client: {}",

@@ -1,34 +1,25 @@
 use crate::llm::model::Model;
 use crate::llm::ollama::OllamaAdapter;
-use async_trait::async_trait;
+use crate::llm::prompt::Prompt;
 use thiserror::Error;
 
-#[async_trait]
-pub trait Inference {
-    async fn generate(
-        &self,
-        request: InferenceRequest,
-    ) -> Result<InferenceResponse, InferenceError>;
-}
-
-pub fn build(model: Model) -> impl Inference {
+pub fn build(model: Model) -> OllamaAdapter {
     match model {
         Model::Llama3_3b | Model::Llama3_11b | Model::Phi4 | Model::BespokeMinicheck => {
             OllamaAdapter::new(model)
         }
-        Model::GPT4o => {
-            todo!()
-        }
+        // default to Ollama
+        _ => OllamaAdapter::new(model),
     }
 }
 
 pub struct InferenceRequest {
-    pub prompt: String,
+    pub prompt: Prompt,
     pub options: Option<InferenceOptions>,
 }
 
 impl InferenceRequest {
-    pub fn new(prompt: String) -> Self {
+    pub fn new(prompt: Prompt) -> Self {
         Self {
             prompt,
             options: None,

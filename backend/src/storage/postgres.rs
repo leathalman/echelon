@@ -1,57 +1,8 @@
-use std::error::Error;
+use crate::storage::model::DBConversationStatus;
+use crate::storage::model::{DBConversation, DBMessage, DBMessageRole, DBUser};
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use sqlx::postgres::{PgPool, PgPoolOptions};
-
-#[derive(sqlx::Type, Debug, Serialize, Deserialize)]
-#[sqlx(type_name = "chat.message_role", rename_all = "lowercase")]
-pub enum MessageRole {
-    User,
-    Assistant,
-}
-
-#[derive(sqlx::Type, Debug, Serialize, Deserialize)]
-#[sqlx(type_name = "chat.conversation_status", rename_all = "lowercase")]
-pub enum ConversationStatus {
-    Active,
-    Archived,
-    Starred,
-    System,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct User {
-    pub id: i32,
-    pub student_id: String,
-    pub email: String,
-    pub password_hash: String,
-    pub created_at: DateTime<Utc>,
-    pub last_login_at: DateTime<Utc>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Conversation {
-    pub id: i32,
-    pub owner_id: i32,
-    pub title: String,
-    pub last_message_at: DateTime<Utc>,
-    pub status: ConversationStatus,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Message {
-    pub id: i32,
-    pub conversation_id: i32,
-    pub content: String,
-    pub role: MessageRole,
-    pub created_at: DateTime<Utc>,
-}
-
-#[derive(Deserialize, Debug, Default)]
-pub struct FilterOptions {
-    pub page: Option<usize>,
-    pub limit: Option<usize>,
-}
+use std::error::Error;
 
 pub struct RelationalStorage {
     pool: PgPool,
@@ -72,9 +23,9 @@ impl RelationalStorage {
         student_id: &str,
         email: &str,
         password_hash: &str,
-    ) -> Result<User, sqlx::Error> {
+    ) -> Result<DBUser, sqlx::Error> {
         sqlx::query_as!(
-            User,
+            DBUser,
             r#"
             INSERT INTO chat.users (student_id, email, password_hash)
             VALUES ($1, $2, $3)
@@ -88,9 +39,9 @@ impl RelationalStorage {
             .await
     }
 
-    pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
+    pub async fn get_user_by_email(&self, email: &str) -> Result<Option<DBUser>, sqlx::Error> {
         sqlx::query_as!(
-            User,
+            DBUser,
             r#"
             SELECT * FROM chat.users WHERE email = $1
             "#,
@@ -104,13 +55,13 @@ impl RelationalStorage {
         &self,
         owner_id: i32,
         title: String,
-    ) -> Result<Conversation, sqlx::Error> {
+    ) -> Result<DBConversation, sqlx::Error> {
         sqlx::query_as!(
-            Conversation,
+            DBConversation,
             r#"
             INSERT INTO chat.conversations (owner_id, title)
             VALUES ($1, $2)
-            RETURNING id, owner_id, title, last_message_at, status as "status!: ConversationStatus"
+            RETURNING id, owner_id, title, last_message_at, status as "status!: DBConversationStatus"
             "#,
             owner_id,
             title
@@ -122,9 +73,9 @@ impl RelationalStorage {
     pub async fn get_user_conversations(
         &self,
         user_id: i32,
-    ) -> Result<Vec<Conversation>, sqlx::Error> {
+    ) -> Result<Vec<DBConversation>, sqlx::Error> {
         sqlx::query_as!(
-            Conversation,
+            DBConversation,
             r#"
             SELECT id, owner_id, title, last_message_at as "last_message_at:DateTime<Utc>", status as "status:_"
             FROM chat.conversations
@@ -141,15 +92,15 @@ impl RelationalStorage {
         &self,
         conversation_id: i32,
         content: String,
-        role: MessageRole,
-    ) -> Result<Message, sqlx::Error> {
+        role: DBMessageRole,
+    ) -> Result<DBMessage, sqlx::Error> {
         sqlx::query_as!(
-            Message,
+            DBMessage,
             r#"
                 WITH new_message AS (
                 INSERT INTO chat.messages (conversation_id, content, role)
                 VALUES ($1, $2, $3)
-                RETURNING id, conversation_id, content, role as "role!: MessageRole", created_at
+                RETURNING id, conversation_id, content, role as "role!: DBMessageRole", created_at
             ),
             update_conversation AS (
                 UPDATE chat.conversations
@@ -160,7 +111,7 @@ impl RelationalStorage {
             "#,
             conversation_id,
             content,
-            role as MessageRole
+            role as DBMessageRole
         )
             .fetch_one(&self.pool)
             .await
@@ -169,11 +120,11 @@ impl RelationalStorage {
     pub async fn get_conversation_messages(
         &self,
         conversation_id: i32,
-    ) -> Result<Vec<Message>, sqlx::Error> {
+    ) -> Result<Vec<DBMessage>, sqlx::Error> {
         sqlx::query_as!(
-            Message,
+            DBMessage,
             r#"
-            SELECT id, conversation_id, content, role as "role!: MessageRole", created_at as "created_at:DateTime<Utc>"
+            SELECT id, conversation_id, content, role as "role!: DBMessageRole", created_at as "created_at:DateTime<Utc>"
             FROM chat.messages
             WHERE conversation_id = $1
             ORDER BY created_at ASC

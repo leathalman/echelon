@@ -1,16 +1,12 @@
 use std::sync::Arc;
 
-use axum::{routing::get, Router};
-use axum::routing::post;
-use sqlx::{Pool, Postgres};
-
+use axum::{routing::get, routing::post, Router};
+use crate::api::completions::completion_new_handler;
 use crate::api::conversations::{conversation_list_handler, conversation_list_messages, conversation_new_handler, conversation_new_message_handler};
 use crate::api::health::health_checker_handler;
-use crate::storage::postgres::RelationalStorage;
-
-pub struct AppState {
-    pub db: RelationalStorage,
-}
+use crate::app_state::AppState;
+use tower_http::trace::{self, TraceLayer};
+use tracing::Level;
 
 pub fn create_router(app_state: Arc<AppState>) -> Router {
     Router::new()
@@ -22,6 +18,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(conversation_list_messages)
                 .post(conversation_new_message_handler),
         )
-        // .route("/api/completions", post(completion_new_handler))
+        .route("/api/completions", post(completion_new_handler))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(Level::INFO))
+        )
         .with_state(app_state)
 }
