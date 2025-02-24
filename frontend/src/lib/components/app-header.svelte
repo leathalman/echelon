@@ -1,21 +1,15 @@
 <script lang="ts">
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import DarkModeSwitch from './dark-mode-switch.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { Button } from '$lib/components/ui/button';
 	import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
 
 	let sidebar = useSidebar();
 </script>
 
-<div class="flex flex-row flex-growth justify-between p-2 h-14">
-	<div class="flex flex-row items-center space-x-4">
+<div class="fixed flex flex-row w-full items-center pl-4 pt-5 pb-3 bg-background">
+	<div class="flex flex-row items-center space-x-3 min-h-9">
 		{#if !sidebar.open || sidebar.isMobile}
-			<Button variant="outline" size="icon">
-				<Sidebar.Trigger />
-			</Button>
+			<Sidebar.Trigger variant="outline" />
 		{/if}
 		<span class="text-lg font-semibold">EchelonGPT</span>
 	</div>
-	<DarkModeSwitch />
 </div>

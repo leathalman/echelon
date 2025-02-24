@@ -1,0 +1,357 @@
+openapi: 3.1.0
+info:
+  title: Echelon API
+  version: 1.0.0
+  description: Retrieval Augmented Generation for Undergraduate Academic Advising.
+servers:
+  - url: https://echelon.com/api
+    description: Location of API endpoint for requests
+security:
+  - bearerAuth: []
+paths:
+  /conversations:
+    get:
+      operationId: getConversations
+      tags:
+        - conversations
+      summary: Get conversations
+      responses:
+        "200":
+          description: The request was successful, and the server has returned the
+            requested resource in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "401":
+          description: Authentication is required to access the requested resource. The
+            client must include the appropriate credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        "404":
+          $ref: "#/components/responses/NotFound"
+      security:
+        - BearerJwt: []
+      parameters: []
+      description: JWT gives user information which is used for conversation look up.
+    post:
+      operationId: createConversation
+      tags:
+        - conversations
+      summary: Create conversation
+      responses:
+        "201":
+          description: The request was successful, and a new resource was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Authentication is required to access the requested resource. The
+            client must include the appropriate credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+      security:
+        - BearerJwt: []
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+      parameters: []
+      description: Must provide title; user_id from JWT
+  /conversations/{conversation_id}/messages:
+    get:
+      operationId: getMessages
+      tags:
+        - conversations
+      summary: Get messages
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      responses:
+        "200":
+          description: The request was successful, and the server has returned the
+            requested resource in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Authentication is required to access the requested resource. The
+            client must include the appropriate credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        "404":
+          $ref: "#/components/responses/NotFound"
+      security:
+        - BearerJwt: []
+    post:
+      operationId: createMessage
+      tags:
+        - conversations
+      summary: Create message
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      responses:
+        "201":
+          description: The request was successful, and a new resource was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Authentication is required to access the requested resource. The
+            client must include the appropriate credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        "409":
+          $ref: "#/components/responses/Conflict"
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                role:
+                  type: string
+              required:
+                - content
+                - role
+  /auth/signup:
+    post:
+      operationId: signUpUser
+      tags:
+        - auth
+      summary: Sign up user
+      responses:
+        "201":
+          description: The request was successful, and a new resource was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerErrror"
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password_hash:
+                  type: string
+              required:
+                - email
+                - password_hash
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags:
+        - auth
+      summary: Login user
+      responses:
+        "200":
+          description: The request was successful, and the server has returned the
+            requested resource in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                required:
+                  - data
+        "404":
+          description: The server cannot find the requested resource. The endpoint may be
+            invalid or the resource may no longer exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+      parameters: []
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password_hash:
+                  type: string
+              required:
+                - email
+                - password_hash
+components:
+  schemas:
+    Conversation:
+      type: object
+      properties:
+        owner_id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+      required:
+        - owner_id
+        - title
+        - status
+      description: Owned by a single user, comprised of zero or more messages
+  responses:
+    Conflict:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                examples:
+                  - Lorem ipsum
+      description: The request could not be completed due to a conflict with the
+        current state of the resource. Resolve the conflict and try again.
+    NotFound:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                examples:
+                  - Lorem ipsum
+      description: The server cannot find the requested resource. The endpoint may be
+        invalid or the resource may no longer exist.
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                examples:
+                  - Lorem ipsum
+      description: The server could not understand the request due to invalid syntax.
+        The client should modify the request and try again.
+    InternalServerErrror:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+                examples:
+                  - Lorem ipsum
+      description: The server encountered an unexpected condition that prevented it
+        from fulfilling the request. Report the issue to the support team if it
+        persists.
+  parameters:
+    conversation_id:
+      name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    BearerJwt:
+      type: http
+      bearerFormat: Json Web Token (JWT)
+      scheme: Bearer
+tags:
+  - name: conversations
+  - name: auth

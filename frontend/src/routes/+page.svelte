@@ -1,19 +1,22 @@
 <script lang="ts">
-	import Header from '$lib/components/app-header.svelte';
-	import TextareaNoFocus from '$lib/components/textarea-no-focus.svelte';
+	import TextareaPlain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 </script>
 
-<div class="flex flex-col basis-[75%] justify-center items-center space-y-7">
-	<span class="text-3xl font-bold text-center">Good Morning, Harrison.</span>
+<div class="flex flex-col basis-[75%] justify-center items-center space-y-5">
+	<div class="w-[90%] md:max-w-156 items-start flex flex-col space-y-4">
+		<img alt="Temp Icon" height="25" src="/temp_logo.svg" width="25" />
+		<span class="text-lg">Good Morning, Harrison.</span>
+	</div>
 	<div
-		class="w-[90%] md:max-w-176 h-28 flex flex-col items-center rounded-md border focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-background">
-		<TextareaNoFocus class="w-full"
-										 placeholder="What can I help you plan today?" />
-		<div class="flex w-full justify-end p-2">
-			<Button class="disabled" variant="default" size="icon">
-				<ArrowRight size={10} />
+		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
+					shadow-lg border border-black">
+		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
+									 placeholder="How can I help?"></TextareaPlain>
+		<div class="flex w-full justify-end items-end py-2 px-2">
+			<Button class="w-9 h-9">
+				<ArrowRight />
 			</Button>
 		</div>
 	</div>
