@@ -1,8 +1,7 @@
 use crate::llm::inference::{
-    Inference, InferenceError, InferenceOptions, InferenceRequest, InferenceResponse,
+    InferenceError, InferenceOptions, InferenceRequest, InferenceResponse,
 };
 use crate::llm::model::Model;
-use async_trait::async_trait;
 use ollama_rs::generation::completion::request::GenerationRequest;
 use ollama_rs::generation::completion::GenerationResponse;
 use ollama_rs::generation::options::GenerationOptions;
@@ -17,7 +16,7 @@ pub struct OllamaAdapter {
 impl OllamaAdapter {
     // Ollama lib panics if default() cannot be constructed.
     // Must download the models via command line before calling from this program.
-    pub fn new(model: Model) -> impl Inference {
+    pub fn new(model: Model) -> Self {
         Self {
             client: Ollama::default(),
             model,
@@ -27,11 +26,25 @@ impl OllamaAdapter {
     pub fn model(&self) -> &Model {
         &self.model
     }
+
+    pub(crate) async fn generate(
+        &self,
+        request: InferenceRequest,
+    ) -> Result<InferenceResponse, InferenceError> {
+        let generation_request = request
+            .to_generation_request(self.model())
+            .options(InferenceOptions::default().into());
+
+        match self.client.generate(generation_request).await {
+            Ok(response) => Ok(InferenceResponse::new(response)),
+            Err(err) => Err(InferenceError::Message(err.to_string())),
+        }
+    }
 }
 
 impl InferenceRequest {
     fn to_generation_request(self, model: &Model) -> GenerationRequest {
-        GenerationRequest::new(model.to_string(), self.prompt)
+        GenerationRequest::new(model.to_string(), self.prompt.to_string())
     }
 }
 
@@ -54,22 +67,5 @@ impl From<InferenceOptions> for GenerationOptions {
             .num_predict(options.max_tokens.unwrap())
             .num_ctx(options.context_window.unwrap())
             .temperature(options.temperature.unwrap())
-    }
-}
-
-#[async_trait]
-impl Inference for OllamaAdapter {
-    async fn generate(
-        &self,
-        request: InferenceRequest,
-    ) -> Result<InferenceResponse, InferenceError> {
-        let generation_request = request
-            .to_generation_request(self.model())
-            .options(InferenceOptions::default().into());
-
-        match self.client.generate(generation_request).await {
-            Ok(response) => Ok(InferenceResponse::new(response)),
-            Err(err) => Err(InferenceError::Message(err.to_string())),
-        }
     }
 }

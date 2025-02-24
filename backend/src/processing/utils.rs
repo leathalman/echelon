@@ -1,10 +1,14 @@
-use fastembed::Embedding;
-use uuid::Uuid;
 use crate::processing::chunk::ChunkError;
 use crate::storage::vector::VectorDataPoint;
+use fastembed::Embedding;
+use uuid::Uuid;
 
 // Generates a vector of VectorDataPoints for use with vectordbs
-pub fn compile_vectors(file_name: String, chunks: Vec<String>, embeddings: Vec<Embedding>) -> Result<Vec<VectorDataPoint>, ChunkError> {
+pub fn compile_vectors(
+    file_name: String,
+    chunks: Vec<String>,
+    embeddings: Vec<Embedding>,
+) -> Result<Vec<VectorDataPoint>, ChunkError> {
     let mut vector_data_points: Vec<VectorDataPoint> = vec![];
 
     for (idx, chunk) in chunks.iter().enumerate() {
@@ -12,7 +16,7 @@ pub fn compile_vectors(file_name: String, chunks: Vec<String>, embeddings: Vec<E
 
         let embedding = match embeddings.get(idx) {
             Some(e) => e.clone(),
-            None => return Err(ChunkError::Message("yikes".to_string()))
+            None => return Err(ChunkError::Message("yikes".to_string())),
         };
 
         let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, name.as_bytes());
@@ -28,4 +32,3 @@ pub fn compile_vectors(file_name: String, chunks: Vec<String>, embeddings: Vec<E
 
     Ok(vector_data_points)
 }
-

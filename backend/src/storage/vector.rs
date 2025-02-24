@@ -26,9 +26,12 @@ pub trait VectorStorage {
     ) -> Result<VectorStorageResponse, VectorStorageError>;
 }
 
-pub fn build(backend: VectorStorageBackend) -> Result<impl VectorStorage, VectorStorageError> {
+pub fn build(
+    backend: VectorStorageBackend,
+    url: &str,
+) -> Result<impl VectorStorage, VectorStorageError> {
     match backend {
-        VectorStorageBackend::Qdrant => QdrantAdapter::new(),
+        VectorStorageBackend::Qdrant => QdrantAdapter::new(url),
     }
 }
 

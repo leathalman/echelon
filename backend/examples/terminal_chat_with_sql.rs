@@ -4,7 +4,7 @@ use backend::llm::model::Model;
 use backend::llm::prompt::Prompt;
 use backend::processing::embedding::embed;
 use backend::storage;
-use backend::storage::postgres::{MessageRole, RelationalStorage};
+use backend::storage::postgres::{DBMessageRole, RelationalStorage};
 use backend::storage::vector::{VectorStorage, VectorStorageBackend};
 use dotenv::dotenv;
 use std::error::Error;
@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let query = query.trim();
 
         // save user query in Postgres
-        db.create_message(conversation.id, query, MessageRole::User)
+        db.create_message(conversation.id, query, DBMessageRole::User)
             .await?;
 
         if query.is_empty() {
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         println!("LLM Response: {}", response.content);
 
         // save assistant's response in Postgres
-        db.create_message(conversation.id, &response.content, MessageRole::Assistant)
+        db.create_message(conversation.id, &response.content, DBMessageRole::Assistant)
             .await?;
     }
 
