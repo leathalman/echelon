@@ -71,7 +71,7 @@ export async function createMessage(conversationId: number, content: string, rol
 	}
 }
 
-export async function createCompletion(conversationId: number, query: string) {
+export async function createCompletion(query: string) {
 	try {
 		const response = await fetch(`http://localhost:8000/api/completions`, {
 			method: 'POST',
@@ -89,7 +89,6 @@ export async function createCompletion(conversationId: number, query: string) {
 		});
 
 		const data = await response.json();
-		
 		return data.content;
 	} catch (error) {
 		console.error('Error:', error);

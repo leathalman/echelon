@@ -3,20 +3,49 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
-	import { createConversation, createMessage } from '$lib/api/client';
+	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 
 	let query = $state('');
 
 	async function submitQuery() {
-		let conversationId = await createConversation();
-		console.log(conversationId);
+		if (!query.trim()) return;
 
-		let messageId = await createMessage(conversationId, query, 'User');
-		console.log(messageId);
+		try {
+			// Create a new conversation with default title
+			const conversationId = await createConversation();
+			console.log('Created conversation:', conversationId);
 
-		await goto(`/chat/${conversationId}`);
+			// Save the user's query as a message in the conversation
+			const result = await createMessage(conversationId, query, 'User');
+			console.log('Created message:', result);
 
-		await createCompletion(conversationId);
+			// Start the completion request but don't wait for it to finish
+			createCompletion(query)
+				.then(completion => {
+					// Save the assistant's response
+					return createMessage(conversationId, completion, 'Assistant');
+				})
+				.then(result => {
+					console.log('Assistant message created:', result);
+				})
+				.catch(error => {
+					console.error('Error in completion:', error);
+				});
+
+			// Navigate to the chat page immediately
+			await goto(`/chat/${conversationId}`);
+		} catch (error) {
+			console.error('Error in submitQuery:', error);
+			// You might want to show an error notification here
+		}
+	}
+
+	// Handle Enter key to submit
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && !event.shiftKey) {
+			event.preventDefault();
+			submitQuery();
+		}
 	}
 </script>
 
@@ -29,7 +58,8 @@
 		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
 					shadow-lg border border-black">
 		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
-									 placeholder="How can I help?" bind:value={query}></TextareaPlain>
+									 placeholder="How can I help?" bind:value={query}
+									 onkeydown={handleKeydown}></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
 			<Button class="w-9 h-9" onclick={submitQuery}>
 				<ArrowRight />
