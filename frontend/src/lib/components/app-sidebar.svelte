@@ -42,6 +42,7 @@
 			const response = await fetch('http://localhost:8000/api/conversations');
 			const data = await response.json();
 			const conversationsResponse = new ConversationsResponse(data);
+			conversationsResponse.conversations = conversationsResponse.getActiveConversations();
 			conversations = conversationsResponse.getConversationsSortedByDate() || [];
 		} catch (err) {
 			console.error(`Failed to fetch conversations: ${err}`);
