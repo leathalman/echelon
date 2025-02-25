@@ -95,7 +95,7 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href={`${conversation.id}`} {...props}>
+									<a href={`/chat/${conversation.id}`} {...props}>
 										<span class="text-sm">{conversation.title}</span>
 									</a>
 								{/snippet}
