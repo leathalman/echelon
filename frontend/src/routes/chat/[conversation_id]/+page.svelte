@@ -4,13 +4,29 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import ConversationsResponse from '$lib/api/conversations';
+	import { onMount } from 'svelte';
 
-	// marked.parse(
-	// 	contents.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, '')
-	// );
+
+	const { data } = $props();
+	let conversation_id = data.chat_id;
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
+
+	async function fetchMessages() {
+	try {
+	const response = await fetch(`http://localhost:8000/api/conversations/${conversation_id}/messages`);
+	const data = await response.json();
+	console.log(data)
+} catch (err) {
+	console.error(`Failed to fetch conversations: ${err}`);
+}
+}
+
+onMount(() => {
+	fetchMessages()
+})
 </script>
 
 <div class="flex flex-col items-center pt-24">
