@@ -1,4 +1,5 @@
 import ConversationsResponse from '$lib/api/conversations';
+import type { Message } from '$lib/api/messages';
 
 export async function fetchMessages(conversationId: number) {
 	try {
@@ -71,20 +72,20 @@ export async function createMessage(conversationId: number, content: string, rol
 	}
 }
 
-export async function createCompletion(query: string) {
+export async function createCompletion(messages: Message[]) {
 	try {
+		const formattedMessages = messages.map((message) => ({
+			content: message.content,
+			role: message.role
+		}));
+
 		const response = await fetch(`http://localhost:8000/api/completions`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				messages: [
-					{
-						role: 'User',
-						content: query
-					}
-				]
+				messages: formattedMessages
 			})
 		});
 

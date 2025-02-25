@@ -2,6 +2,7 @@ use crate::api::completions::ApiMessage;
 
 const INSTRUCTION: &str = "You are a helpful academic advising assistant. \
 Use the following pieces of retrieved context to answer the question without mentioning you were given context. \
+Make sure to review the chat history before answering. \
 If you don't know the answer, just say that you don't know.";
 
 pub struct Prompt {

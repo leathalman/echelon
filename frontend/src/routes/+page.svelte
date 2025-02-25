@@ -4,25 +4,29 @@
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
+	import type { Message } from '$lib/api/messages';
 
 	let query = $state('');
 
-	async function submitQuery() {
+	async function handleSubmitQuery() {
 		if (!query.trim()) return;
 
 		try {
-			// Create a new conversation with default title
 			const conversationId = await createConversation();
 			console.log('Created conversation:', conversationId);
 
-			// Save the user's query as a message in the conversation
 			const result = await createMessage(conversationId, query, 'User');
 			console.log('Created message:', result);
 
-			// Start the completion request but don't wait for it to finish
-			createCompletion(query)
+			let message: Message = {
+				role: 'User',
+				content: query
+			};
+
+			const messages: Message[] = [message];
+
+			createCompletion(messages)
 				.then(completion => {
-					// Save the assistant's response
 					return createMessage(conversationId, completion, 'Assistant');
 				})
 				.then(result => {
@@ -32,19 +36,16 @@
 					console.error('Error in completion:', error);
 				});
 
-			// Navigate to the chat page immediately
 			await goto(`/chat/${conversationId}`);
 		} catch (error) {
 			console.error('Error in submitQuery:', error);
-			// You might want to show an error notification here
 		}
 	}
 
-	// Handle Enter key to submit
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
-			submitQuery();
+			handleSubmitQuery();
 		}
 	}
 </script>
@@ -61,7 +62,7 @@
 									 placeholder="How can I help?" bind:value={query}
 									 onkeydown={handleKeydown}></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
-			<Button class="w-9 h-9" onclick={submitQuery}>
+			<Button class="w-9 h-9" onclick={handleSubmitQuery}>
 				<ArrowRight />
 			</Button>
 		</div>
