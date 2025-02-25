@@ -3,7 +3,6 @@
 	import UserRound from 'lucide-svelte/icons/user-round';
 	import Settings from 'lucide-svelte/icons/settings';
 
-	import PanelLeft from 'lucide-svelte/icons/panel-left';
 	import Search from 'lucide-svelte/icons/search';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
 
@@ -13,6 +12,9 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { onMount } from 'svelte';
+	import ConversationsResponse, { type Conversation } from '$lib/api/conversations';
+
 
 	// Menu items.
 	const items = [
@@ -32,28 +34,23 @@
 			icon: Settings
 		}
 	];
-	const chatHistory = [
-		{
-			title: 'Semester Planning Summary',
-			url: '/chat/1'
-		},
-		{
-			title: 'Adding Math Double Major',
-			url: '/chat-2'
-		},
-		{
-			title: 'Review  Syllabus for COSC 30023',
-			url: '/chat-3'
-		},
-		{
-			title: 'Projected Performance for MATH 40021',
-			url: '/chat-5'
-		},
-		{
-			title: 'Syllabi Comparison for MUSI 12002 and',
-			url: '/chat-2'
+
+	let conversations = $state<Conversation[]>([]);
+
+	async function fetchConversations() {
+		try {
+			const response = await fetch('http://localhost:8000/api/conversations');
+			const data = await response.json();
+			const conversationsResponse = new ConversationsResponse(data);
+			conversations = conversationsResponse.getConversationsSortedByDate() || [];
+		} catch (err) {
+			console.error(`Failed to fetch conversations: ${err}`);
 		}
-	];
+	}
+
+	onMount(() => {
+		fetchConversations();
+	});
 </script>
 
 <Sidebar.Root class="pl-0.5">
@@ -94,12 +91,12 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each chatHistory as chat}
+					{#each conversations as conversation}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href={chat.url} {...props}>
-										<span class="text-sm">{chat.title}</span>
+									<a href={`${conversation.id}`} {...props}>
+										<span class="text-sm">{conversation.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

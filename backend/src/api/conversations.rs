@@ -24,8 +24,6 @@ pub struct CreateConversationSchema {
 pub async fn conversation_list_handler(
     State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    tracing::info!("Handler was called");
-
     // TODO: Hardcoded to user with ID=1, this will be replaced by JWT
     let query_result = state.relational_storage.get_user_conversations(1).await;
 
