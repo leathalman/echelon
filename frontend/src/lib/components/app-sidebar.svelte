@@ -13,7 +13,8 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { onMount } from 'svelte';
-	import ConversationsResponse, { type Conversation } from '$lib/api/conversations';
+	import { type Conversation } from '$lib/api/conversations';
+	import { fetchConversations } from '$lib/api/client';
 
 
 	// Menu items.
@@ -37,20 +38,9 @@
 
 	let conversations = $state<Conversation[]>([]);
 
-	async function fetchConversations() {
-		try {
-			const response = await fetch('http://localhost:8000/api/conversations');
-			const data = await response.json();
-			const conversationsResponse = new ConversationsResponse(data);
-			conversationsResponse.conversations = conversationsResponse.getActiveConversations();
-			conversations = conversationsResponse.getConversationsSortedByDate() || [];
-		} catch (err) {
-			console.error(`Failed to fetch conversations: ${err}`);
-		}
-	}
-
-	onMount(() => {
-		fetchConversations();
+	// TODO: see if onMount is the right lifecycle for this
+	onMount(async () => {
+		conversations = await fetchConversations();
 	});
 </script>
 

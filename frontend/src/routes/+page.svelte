@@ -3,77 +3,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
+	import { createConversation, createMessage } from '$lib/api/client';
 
 	let query = $state('');
-
-	async function createConversation() {
-		try {
-			const response = await fetch('http://localhost:8000/api/conversations', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					'title': 'Untitled'
-				})
-			});
-
-			const data = await response.json();
-
-			return data.conversation_id;
-		} catch (error) {
-			console.error('Error:', error);
-			throw error;
-		}
-	}
-
-	async function createMessage(conversationId: number, content: string, role: string) {
-		try {
-			const response = await fetch(`http://localhost:8000/api/conversations/${conversationId}/messages`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					'content': content,
-					'role': role
-				})
-			});
-
-			const data = await response.json();
-
-			return data.conversation_id;
-		} catch (error) {
-			console.error('Error:', error);
-			throw error;
-		}
-	}
-
-	async function createCompletion(conversationId: number) {
-		try {
-			const response = await fetch(`http://localhost:8000/api/completions`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					'messages': [
-						{
-							'role': 'User',
-							'content': query
-						}
-					]
-				})
-			});
-
-			const data = await response.json();
-			let res = await createMessage(conversationId, data.content, 'Assistant');
-			console.log(res);
-		} catch (error) {
-			console.error('Error:', error);
-			throw error;
-		}
-	}
 
 	async function submitQuery() {
 		let conversationId = await createConversation();
