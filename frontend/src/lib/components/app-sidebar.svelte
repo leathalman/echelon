@@ -20,17 +20,17 @@
 	const items = [
 		{
 			title: 'Academic Profile',
-			url: '/academic-profile',
+			url: '/maintenance',
 			icon: BookText
 		},
 		{
 			title: 'Account',
-			url: '/account',
+			url: '/maintenance',
 			icon: UserRound
 		},
 		{
 			title: 'Settings',
-			url: '/settings',
+			url: '/maintenance',
 			icon: Settings
 		}
 	];
