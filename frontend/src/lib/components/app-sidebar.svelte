@@ -3,7 +3,6 @@
 	import UserRound from 'lucide-svelte/icons/user-round';
 	import Settings from 'lucide-svelte/icons/settings';
 
-	import PanelLeft from 'lucide-svelte/icons/panel-left';
 	import Search from 'lucide-svelte/icons/search';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
 
@@ -13,47 +12,39 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { onMount } from 'svelte';
+	import { type Conversation } from '$lib/api/conversations';
+	import { fetchConversations } from '$lib/api/client';
+	import { goto } from '$app/navigation';
 
-	// Menu items.
 	const items = [
 		{
 			title: 'Academic Profile',
-			url: '/academic-profile',
+			url: '/maintenance',
 			icon: BookText
 		},
 		{
 			title: 'Account',
-			url: '/account',
+			url: '/maintenance',
 			icon: UserRound
 		},
 		{
 			title: 'Settings',
-			url: '/settings',
+			url: '/maintenance',
 			icon: Settings
 		}
 	];
-	const chatHistory = [
-		{
-			title: 'Semester Planning Summary',
-			url: '/chat/1'
-		},
-		{
-			title: 'Adding Math Double Major',
-			url: '/chat-2'
-		},
-		{
-			title: 'Review  Syllabus for COSC 30023',
-			url: '/chat-3'
-		},
-		{
-			title: 'Projected Performance for MATH 40021',
-			url: '/chat-5'
-		},
-		{
-			title: 'Syllabi Comparison for MUSI 12002 and',
-			url: '/chat-2'
-		}
-	];
+
+	let conversations = $state<Conversation[]>([]);
+
+	// TODO: see if onMount is the right lifecycle for this
+	onMount(async () => {
+		conversations = await fetchConversations();
+	});
+
+	function handleNewChat() {
+		goto('/');
+	}
 </script>
 
 <Sidebar.Root class="pl-0.5">
@@ -64,7 +55,7 @@
 				<Button variant="outline" class="h-9 w-9">
 					<Search />
 				</Button>
-				<Button variant="default" size="icon" class="h-9 w-9">
+				<Button variant="default" size="icon" class="h-9 w-9" onclick={handleNewChat}>
 					<CirclePlus />
 				</Button>
 			</div>
@@ -94,12 +85,12 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each chatHistory as chat}
+					{#each conversations as conversation}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href={chat.url} {...props}>
-										<span class="text-sm">{chat.title}</span>
+									<a href={`/chat/${conversation.id}`} {...props}>
+										<span class="text-sm">{conversation.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

@@ -45,7 +45,7 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(deployment_url).await.unwrap();
 
-    info!("Axum is up :)");
+    info!("Axum is up.");
 
     axum::serve(listener, app)
         .await
