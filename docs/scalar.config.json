@@ -1,5 +1,7 @@
 {
-  "subdomain": "echelon",
+  "customDomain": "docs.echelongpt.com",
+  "publishOnMerge": true,
+  "theme": "purple",
   "guides": [
     {
       "name": "My awesome documentation",
