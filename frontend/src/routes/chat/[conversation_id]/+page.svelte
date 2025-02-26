@@ -14,9 +14,12 @@
 	let messages = $state<Message[]>([]);
 	let query = $state('');
 
+	let loading = $state(false);
+
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 	let pollInterval: number;
 
+	// TODO: only poll if there is a current completion request being processed...
 	function pollForCompletion() {
 		if (pollInterval) clearInterval(pollInterval);
 
@@ -55,6 +58,7 @@
 	}
 
 	async function handleSubmitQuery() {
+		loading = true;
 		if (!query.trim()) return;
 
 		try {
@@ -76,6 +80,8 @@
 				content: completion,
 				role: 'Assistant',
 			};
+
+			loading = false;
 
 			messages = [...messages, assistantMessage];
 
@@ -99,7 +105,7 @@
 		{#each messages as message}
 				{#if message.role === 'User'}
 					<div class="flex w-full justify-end">
-						<span class="text-md bg-violet-100 rounded-lg p-3">{message.content}</span>
+						<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
 					</div>
 				{:else}
 					<div class="prose">
@@ -107,6 +113,9 @@
 					</div>
 				{/if}
 		{/each}
+		{#if loading}
+			<span class="text-md">Thinking...</span>
+		{/if}
 	</div>
 	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-background">
 		<div class="flex flex-row bg-background rounded-lg shadow-lg border justify-between">

@@ -15,9 +15,8 @@
 	import { onMount } from 'svelte';
 	import { type Conversation } from '$lib/api/conversations';
 	import { fetchConversations } from '$lib/api/client';
+	import { goto } from '$app/navigation';
 
-
-	// Menu items.
 	const items = [
 		{
 			title: 'Academic Profile',
@@ -42,6 +41,10 @@
 	onMount(async () => {
 		conversations = await fetchConversations();
 	});
+
+	function handleNewChat() {
+		goto('/');
+	}
 </script>
 
 <Sidebar.Root class="pl-0.5">
@@ -52,7 +55,7 @@
 				<Button variant="outline" class="h-9 w-9">
 					<Search />
 				</Button>
-				<Button variant="default" size="icon" class="h-9 w-9">
+				<Button variant="default" size="icon" class="h-9 w-9" onclick={handleNewChat}>
 					<CirclePlus />
 				</Button>
 			</div>
