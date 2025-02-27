@@ -29,6 +29,7 @@ pub enum DBConversationStatus {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone)]
 pub struct DBUser {
     pub id: i32,
     pub student_id: String,

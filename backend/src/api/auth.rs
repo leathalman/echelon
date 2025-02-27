@@ -1,3 +1,4 @@
+use crate::api::jwt::TokenClaims;
 use crate::app_state::AppState;
 use crate::storage::model::DBUser;
 use argon2::{
@@ -5,9 +6,11 @@ use argon2::{
     Argon2,
 };
 use axum::extract::State;
-use axum::http::StatusCode;
+use axum::http::{header, HeaderValue, Response, StatusCode};
 use axum::response::IntoResponse;
 use axum::{response, Json};
+use axum_extra::extract::cookie::{Cookie, SameSite};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
@@ -104,16 +107,6 @@ pub async fn auth_signup_handler(
             Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
         }
     }
-
-    // issue JWT
-
-    // generate OTP
-
-    // send email
-
-    // create password hash
-
-    // make new user
 }
 
 // POST /api/auth/login
@@ -121,70 +114,103 @@ pub async fn auth_login_handler(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginUserSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    // check that user exists with email
-    let email_result = state
+    // Check if user exists with email
+    let user = match state
         .relational_storage
         .get_user_by_email(&payload.email)
-        .await;
-
-    match email_result {
-        Ok(response) => {
-            if let Some(user) = response {
-                // check password
-                let parsed_hash = PasswordHash::new(&user.password_hash);
-
-                match parsed_hash {
-                    Ok(parsed_hash) => {
-                        // see if password hash is correct
-                        let password_correct = Argon2::default()
-                            .verify_password(&payload.password.as_bytes(), &parsed_hash)
-                            .is_ok();
-
-                        if password_correct {
-                            let user_response = json!({
-                                "message": "Login successful"
-                            });
-
-                            Ok((StatusCode::OK, Json(user_response)))
-                        } else {
-                            info!("Incorrect password");
-                            let error_response = json!({
-                                "message": "Incorrect email or password",
-                            });
-                            Err((StatusCode::UNAUTHORIZED, Json(error_response)))
-                        }
-                    }
-                    Err(e) => {
-                        // unable to parse hash
-                        error!("{}", e.to_string());
-                        let error_response = json!({
-                            "message": "Unable to login due to a server error",
-                        });
-                        Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
-                    }
-                }
-            } else {
-                // user does not exist with email
-                info!("User does not exist with email: {}", payload.email);
-                let error_response = json!({
-                    "message": "Incorrect email or password",
-                });
-                Err((StatusCode::UNAUTHORIZED, Json(error_response)))
-            }
-        }
+        .await
+    {
         Err(e) => {
             // SQL error, failed to execute SQL SELECT
             error!("{}", e.to_string());
             let error_response = json!({
                 "message": "Unable to login due to a server error",
             });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+        Ok(None) => {
+            // User does not exist with email
+            info!("User does not exist with email: {}", payload.email);
+            let error_response = json!({
+                "message": "Incorrect email or password",
+            });
+            return Err((StatusCode::UNAUTHORIZED, Json(error_response)));
+        }
+        Ok(Some(user)) => user,
+    };
+
+    let parsed_hash = match PasswordHash::new(&user.password_hash) {
+        Err(e) => {
+            error!("{}", e.to_string());
+            let error_response = json!({
+                "message": "Unable to login due to a server error",
+            });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+        Ok(parsed_hash) => parsed_hash,
+    };
+
+    // Verify password
+    let password_correct = Argon2::default()
+        .verify_password(&payload.password.as_bytes(), &parsed_hash)
+        .is_ok();
+
+    if !password_correct {
+        info!("Incorrect password");
+        let error_response = json!({
+            "message": "Incorrect email or password",
+        });
+        return Err((StatusCode::UNAUTHORIZED, Json(error_response)));
+    }
+
+    let now = chrono::Utc::now();
+    let issued_at = now.timestamp() as usize;
+    // TODO: does not use config string BTW
+    let expire_at = (now + chrono::Duration::minutes(60)).timestamp() as usize;
+    let claims: TokenClaims = TokenClaims {
+        subject: user.id.to_string(),
+        issued_at,
+        expire_at,
+    };
+
+    let token = match encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(state.config.jwt_secret.as_ref()),
+    ) {
+        Ok(token) => token,
+        Err(e) => {
+            error!("{}", e.to_string());
+            let error_response = json!({
+            "message": "Login failed due to server error",
+            });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+    };
+
+    let cookie = Cookie::build(("token", token.to_owned()))
+        .path("/")
+        .max_age(time::Duration::hours(1))
+        .same_site(SameSite::Lax)
+        .http_only(true);
+
+    let mut response = Response::new(json!({"token": token}).to_string());
+
+    match cookie.to_string().parse::<HeaderValue>() {
+        Ok(cookie_header_value) => {
+            response
+                .headers_mut()
+                .insert(header::SET_COOKIE, cookie_header_value);
+            Ok(response)
+        }
+        Err(e) => {
+            error!("Failed to parse cookie to header value: {}", e);
+            let error_response = json!({
+                "message": "Login failed due to server error",
+            });
             Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
         }
     }
-
-    // check that password is correct
-
-    // issue status code only for now
 }
 
 // POST /api/auth/reset-password

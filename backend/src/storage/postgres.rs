@@ -55,6 +55,18 @@ impl RelationalStorage {
             .await
     }
 
+    pub async fn get_user_by_id(&self, id: &i32) -> Result<Option<DBUser>, sqlx::Error> {
+        sqlx::query_as!(
+            DBUser,
+            r#"
+        SELECT * FROM chat.users WHERE id = $1
+        "#,
+            id
+        )
+            .fetch_optional(&self.pool)
+            .await
+    }
+
     pub async fn create_conversation(
         &self,
         owner_id: i32,
