@@ -32,6 +32,8 @@ pub enum DBConversationStatus {
 pub struct DBUser {
     pub id: i32,
     pub student_id: String,
+    pub first_name: String,
+    pub last_name: String,
     pub email: String,
     pub password_hash: String,
     pub created_at: DateTime<Utc>,

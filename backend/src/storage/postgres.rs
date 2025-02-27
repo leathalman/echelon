@@ -23,17 +23,21 @@ impl RelationalStorage {
         student_id: &str,
         email: &str,
         password_hash: &str,
+        first_name: &str,
+        last_name: &str,
     ) -> Result<DBUser, sqlx::Error> {
         sqlx::query_as!(
             DBUser,
             r#"
-            INSERT INTO chat.users (student_id, email, password_hash)
-            VALUES ($1, $2, $3)
-            RETURNING id, student_id, email, password_hash, created_at, last_login_at
+            INSERT INTO chat.users (student_id, email, password_hash, first_name, last_name)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at
             "#,
             student_id,
             email,
-            password_hash
+            password_hash,
+            first_name,
+            last_name
         )
             .fetch_one(&self.pool)
             .await

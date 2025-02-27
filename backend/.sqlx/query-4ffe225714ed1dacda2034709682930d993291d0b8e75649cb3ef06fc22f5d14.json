@@ -32,6 +32,16 @@
         "ordinal": 5,
         "name": "last_login_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "first_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_name",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
@@ -40,6 +50,8 @@
       ]
     },
     "nullable": [
+      false,
+      false,
       false,
       false,
       false,
