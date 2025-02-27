@@ -25,6 +25,7 @@ pub struct CreateCompletionSchema {
 
 /// POST /api/completions -> JWT required
 // TODO: error handling is horrible in this method, please fix.
+// TODO: generalize error message return (look at auth for this)
 pub async fn completion_new_handler(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateCompletionSchema>,

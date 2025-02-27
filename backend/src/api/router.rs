@@ -7,12 +7,13 @@ use crate::api::health::health_checker_handler;
 use crate::app_state::AppState;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
-use crate::api::auth::auth_signup_handler;
+use crate::api::auth::{auth_login_handler, auth_signup_handler};
 
 pub fn create_router(app_state: Arc<AppState>) -> Router {
     Router::new()
         .route("/api/health", get(health_checker_handler))
         .route("/api/auth/signup", post(auth_signup_handler))
+        .route("/api/auth/login", post(auth_login_handler))
         .route("/api/conversations", get(conversation_list_handler)
             .post(conversation_new_handler))
         .route(

@@ -21,6 +21,7 @@ pub struct CreateConversationSchema {
 
 /// GET /api/conversation/
 /// Authorized Endpoint -> JWT Required
+/// // TODO: generalize error message return (look at auth for this)
 pub async fn conversation_list_handler(
     State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
