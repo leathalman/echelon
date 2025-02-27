@@ -3,3 +3,4 @@ pub mod llm;
 pub mod processing;
 pub mod storage;
 pub mod app_state;
+pub mod config;
