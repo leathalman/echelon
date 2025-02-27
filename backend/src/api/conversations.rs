@@ -1,9 +1,9 @@
 use crate::app_state::AppState;
-use crate::storage::model::DBMessageRole;
+use crate::storage::model::{DBMessageRole, DBUser};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
+use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
@@ -24,9 +24,10 @@ pub struct CreateConversationSchema {
 /// // TODO: generalize error message return (look at auth for this)
 pub async fn conversation_list_handler(
     State(state): State<Arc<AppState>>,
+    Extension(user): Extension<DBUser>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     // TODO: Hardcoded to user with ID=1, this will be replaced by JWT
-    let query_result = state.relational_storage.get_user_conversations(1).await;
+    let query_result = state.relational_storage.get_user_conversations(user.id).await;
 
     if query_result.is_err() {
         let error_response = json!({

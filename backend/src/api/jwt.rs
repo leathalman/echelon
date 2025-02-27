@@ -1,20 +1,19 @@
-use std::sync::Arc;
-
 use crate::app_state::AppState;
-use crate::storage::model::DBUser;
+use jsonwebtoken::{decode, DecodingKey, Validation};
+use serde::{Deserialize, Serialize};
+
 use axum::{
-    body::Body,
     extract::State,
-    http::{header, Request, StatusCode},
+    http::{Request, StatusCode},
     middleware::Next,
     response::IntoResponse,
     Json,
 };
-use axum_extra::extract::cookie::CookieJar;
-use jsonwebtoken::{decode, DecodingKey, Validation};
-use serde::{Deserialize, Serialize};
+use axum_extra::extract::CookieJar;
 use serde_json::json;
-use sqlx::Error;
+use std::sync::Arc;
+use axum::body::Body;
+use axum::http::header;
 use tracing::{error, info};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,17 +24,16 @@ pub struct TokenClaims {
 }
 
 pub async fn auth(
-    cookie_jar: CookieJar,
     State(state): State<Arc<AppState>>,
-    mut request: Request<Body>,
+    cookie_jar: CookieJar,
+    mut req: Request<Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let token = match cookie_jar
+    let token = cookie_jar
         .get("token")
         .map(|cookie| cookie.value().to_string())
         .or_else(|| {
-            request
-                .headers()
+            req.headers()
                 .get(header::AUTHORIZATION)
                 .and_then(|auth_header| auth_header.to_str().ok())
                 .and_then(|auth_val| {
@@ -45,14 +43,16 @@ pub async fn auth(
                         None
                     }
                 })
-        }) {
-        Some(value) => value,
+        });
+
+    let token = match token {
+        Some(token) => token,
         None => {
             info!("No JWT found, please provide one");
             let error_response = json!({
                 "message": "No JWT found, please provide one",
             });
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+            return Err((StatusCode::UNAUTHORIZED, Json(error_response)));
         }
     };
 
@@ -71,35 +71,31 @@ pub async fn auth(
         }
     };
 
-    println!("{:?}", claims);
+    // Use proper logging instead of println
+    info!("Token claims: {:?}", claims);
 
-    // user id is a little different for me?
-    // let user_id = match uuid::Uuid::parse_str(&claims.sub) {
-    //     Ok(uuid) => uuid,
-    //     Err(e) => {
-    //         info!("Unable to parse user_id from claims: {}", e);
-    //         return Err((
-    //             StatusCode::UNAUTHORIZED,
-    //             Json(json!({ "message": "Invalid JWT" })),
-    //         ));
-    //     }
-    // };
-
-    let user_id = match &claims.subject.parse::<i32>() {
-        Ok(num) => num.clone(),
+    let user_id = match claims.subject.parse::<i32>() {
+        Ok(id) => id,
         Err(e) => {
-            error!("{}", e);
+            error!("Failed to parse user ID: {}", e);
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({ "message": "Failed to fetch user from database" })),
+                Json(json!({ "message": "Invalid token format" })),
             ));
         }
     };
 
     let user = match state.relational_storage.get_user_by_id(&user_id).await {
-        Ok(user) => user,
+        Ok(Some(user)) => user,
+        Ok(None) => {
+            info!("No user found for id: {}", user_id);
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                Json(json!({ "message": "User not found" })),
+            ));
+        }
         Err(e) => {
-            error!("{}", e);
+            error!("Database error: {}", e);
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(json!({ "message": "Failed to fetch user from database" })),
@@ -107,14 +103,6 @@ pub async fn auth(
         }
     };
 
-    if let Some(user) = user {
-        request.extensions_mut().insert(user);
-        Ok(next.run(request).await)
-    } else {
-        info!("No user found for id: {}", user_id);
-        Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "message": "Failed to fetch user from database" })),
-        ))
-    }
+    req.extensions_mut().insert(user);
+    Ok(next.run(req).await)
 }

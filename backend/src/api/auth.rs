@@ -1,6 +1,5 @@
 use crate::api::jwt::TokenClaims;
 use crate::app_state::AppState;
-use crate::storage::model::DBUser;
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -8,7 +7,7 @@ use argon2::{
 use axum::extract::State;
 use axum::http::{header, HeaderValue, Response, StatusCode};
 use axum::response::IntoResponse;
-use axum::{response, Json};
+use axum::{Json};
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
@@ -213,5 +212,21 @@ pub async fn auth_login_handler(
     }
 }
 
+// POST /api/auth/logout
+pub async fn auth_logout_handler() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    // make new cookie to invalid current cookie in the browser
+    let cookie = Cookie::build(("token", ""))
+        .path("/")
+        .max_age(time::Duration::hours(-1))
+        .same_site(SameSite::Lax)
+        .http_only(true);
+
+    let mut response = Response::new(json!({}).to_string());
+    response
+        .headers_mut()
+        .insert(header::SET_COOKIE, cookie.to_string().parse().unwrap());
+    Ok(response)
+}
+
+
 // POST /api/auth/reset-password
-// issue JWT? does that need to be an endpoint?

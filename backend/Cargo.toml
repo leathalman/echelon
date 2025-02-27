@@ -7,7 +7,7 @@ edition = "2021"
 async-trait = "0.1.85"
 fastembed = "4.3.0"
 ollama-rs = { version = "0.2.2", features = ["stream"] }
-qdrant-client = "1.12.1"
+qdrant-client = "1.13.0"
 thiserror = "2.0.9"
 tokio = { version = "1.42.0", features = ["full", "rt-multi-thread"] }
 uuid = { version = "1.11.0", features = ["fast-rng", "macro-diagnostics", "serde", "v4", "v5"] }
@@ -25,10 +25,13 @@ serde_json = "1.0.138"
 chrono = { version = "0.4.39", features = ["serde"] }
 tower-http = { version = "0.6.2", features = ["cors", "trace"] }
 argon2 = "0.5.3"
-axum-extra = { version = "0.10.0", features = ["cookie"] }
+axum-extra = { version = "0.9.6", features = ["cookie"] }
 time = "0.3.37"
 jsonwebtoken = "9.3.1"
 rand_core = { version = "0.9.2", features = ["std"] }
 
 [profile.dev.package.sqlx-macros]
 opt-level = 3
+
+[package.metadata.rust-version]
+axum = "0.8.1"
