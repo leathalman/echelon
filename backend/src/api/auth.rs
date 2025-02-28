@@ -121,7 +121,7 @@ pub async fn auth_login_handler(
     {
         Err(e) => {
             // SQL error, failed to execute SQL SELECT
-            error!("{}", e.to_string());
+            error!("Failed on SQL fetch: {}", e.to_string());
             let error_response = json!({
                 "message": "Unable to login due to a server error",
             });
@@ -140,7 +140,7 @@ pub async fn auth_login_handler(
 
     let parsed_hash = match PasswordHash::new(&user.password_hash) {
         Err(e) => {
-            error!("{}", e.to_string());
+            error!("Failed on password hash: {}", e.to_string());
             let error_response = json!({
                 "message": "Unable to login due to a server error",
             });
@@ -167,9 +167,9 @@ pub async fn auth_login_handler(
     // TODO: does not use config string BTW
     let expire_at = (now + chrono::Duration::minutes(60)).timestamp() as usize;
     let claims: TokenClaims = TokenClaims {
-        subject: user.id.to_string(),
-        issued_at,
-        expire_at,
+        sub: user.id.to_string(),
+        iat: issued_at,
+        exp: expire_at,
     };
 
     let token = match encode(
@@ -212,7 +212,7 @@ pub async fn auth_login_handler(
     }
 }
 
-// POST /api/auth/logout
+// GET /api/auth/logout
 pub async fn auth_logout_handler() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     // make new cookie to invalid current cookie in the browser
     let cookie = Cookie::build(("token", ""))

@@ -3,10 +3,11 @@ use crate::storage::model::{DBMessageRole, DBUser};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::{Extension, Json};
+use axum::{debug_handler, Extension, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
+use tracing::info;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateMessageSchema {
@@ -26,8 +27,10 @@ pub async fn conversation_list_handler(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<DBUser>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    // TODO: Hardcoded to user with ID=1, this will be replaced by JWT
-    let query_result = state.relational_storage.get_user_conversations(user.id).await;
+    let query_result = state
+        .relational_storage
+        .get_user_conversations(user.id)
+        .await;
 
     if query_result.is_err() {
         let error_response = json!({
@@ -50,12 +53,12 @@ pub async fn conversation_list_handler(
 /// POST /api/conversation
 pub async fn conversation_new_handler(
     State(state): State<Arc<AppState>>,
+    Extension(user): Extension<DBUser>,
     Json(payload): Json<CreateConversationSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    // TODO: hardcoded USER_ID, replace with JWT implementation
     let query_result = state
         .relational_storage
-        .create_conversation(1, payload.title)
+        .create_conversation(user.id, payload.title)
         .await;
 
     match query_result {
@@ -66,7 +69,6 @@ pub async fn conversation_new_handler(
 
             Ok((StatusCode::CREATED, Json(conversation_response)))
         }
-        // other errors:     "message": "error returned from database: duplicate key value violates unique constraint \"conversations_pkey\"",
         Err(e) => {
             // TODO: make sure this doesn't leak sensitive info
             let error_response = json!({
@@ -84,8 +86,41 @@ pub async fn conversation_new_handler(
 pub async fn conversation_list_messages(
     Path(conversation_id): Path<i32>,
     State(state): State<Arc<AppState>>,
+    Extension(user): Extension<DBUser>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    // TODO: hardcoded USER_ID, replace with JWT implementation
+    // fetch convo and check user id, use SQL qeury and compare
+    let fetch_conversations = match state
+        .relational_storage
+        .get_conversation_by_id(conversation_id)
+        .await {
+        Ok(response) => { response }
+        Err(e) => {
+            let error_response = json!({
+            "message": format!("Failed to fetch conversation {}", {conversation_id})
+        });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+    };
+
+    info!("Convo ID: {}", conversation_id);
+
+    if fetch_conversations.is_empty() {
+        let error_response = json!({
+        "message": format!("Conversation not found: {}", conversation_id)
+    });
+        return Err((StatusCode::NOT_FOUND, Json(error_response)));
+    }
+
+    for conversation in &fetch_conversations {
+        info!("OWNER ID: {}", conversation.owner_id);
+        if conversation.owner_id != user.id {
+            let error_response = json!({
+            "message": format!("Unauthorized access to conversation {}", conversation_id)
+        });
+            return Err((StatusCode::UNAUTHORIZED, Json(error_response)));
+        }
+    }
+
     let query_result = state
         .relational_storage
         .get_conversation_messages(conversation_id)
@@ -93,8 +128,6 @@ pub async fn conversation_list_messages(
 
     if query_result.is_err() {
         let error_response = json!({
-            "status": "error",
-            "code": 500,
             "message": format!("Failed to fetch messages for conversation {}", {conversation_id})
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
@@ -107,8 +140,6 @@ pub async fn conversation_list_messages(
     });
 
     Ok(Json(json_response))
-
-    // TODO: Only return success if UserID matches ownerID from Postgres, aka needs security
 }
 
 /// POST /api/conversation/{conversation_id}/messages

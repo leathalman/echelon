@@ -7,7 +7,7 @@ use crate::api::health::health_checker_handler;
 use crate::app_state::AppState;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
-use crate::api::auth::{auth_login_handler, auth_signup_handler};
+use crate::api::auth::{auth_login_handler, auth_logout_handler, auth_signup_handler};
 use crate::api::jwt::auth;
 
 pub fn create_router(app_state: Arc<AppState>) -> Router {
@@ -18,7 +18,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
     let public_routes = Router::new()
         .route("/health", get(health_checker_handler))
         .route("/auth/signup", post(auth_signup_handler))
-        .route("/auth/login", post(auth_login_handler));
+        .route("/auth/login", post(auth_login_handler))
+        .route("/auth/logout", get(auth_logout_handler));
 
     // Protected routes that require authentication
     let protected_routes = Router::new()

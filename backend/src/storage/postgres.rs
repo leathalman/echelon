@@ -104,6 +104,23 @@ impl RelationalStorage {
             .await
     }
 
+    pub async fn get_conversation_by_id(
+        &self,
+        conversation_id: i32,
+    ) -> Result<Vec<DBConversation>, sqlx::Error> {
+        sqlx::query_as!(
+            DBConversation,
+            r#"
+            SELECT id, owner_id, title, last_message_at as "last_message_at:DateTime<Utc>", status as "status:_"
+            FROM chat.conversations
+            WHERE id = $1
+            "#,
+            conversation_id
+        )
+            .fetch_all(&self.pool)
+            .await
+    }
+
     pub async fn create_message(
         &self,
         conversation_id: i32,

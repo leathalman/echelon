@@ -18,9 +18,12 @@ use tracing::{error, info};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
-    pub subject: String,
-    pub issued_at: usize,
-    pub expire_at: usize,
+    // subject
+    pub sub: String,
+    // issued at
+    pub iat: usize,
+    // expiration time
+    pub exp: usize,
 }
 
 pub async fn auth(
@@ -45,6 +48,8 @@ pub async fn auth(
                 })
         });
 
+    info!("Token: {:?}", token);
+
     let token = match token {
         Some(token) => token,
         None => {
@@ -55,6 +60,8 @@ pub async fn auth(
             return Err((StatusCode::UNAUTHORIZED, Json(error_response)));
         }
     };
+
+    info!("Token: {:?}", token);
 
     let claims = match decode::<TokenClaims>(
         &token,
@@ -71,10 +78,9 @@ pub async fn auth(
         }
     };
 
-    // Use proper logging instead of println
     info!("Token claims: {:?}", claims);
 
-    let user_id = match claims.subject.parse::<i32>() {
+    let user_id = match claims.sub.parse::<i32>() {
         Ok(id) => id,
         Err(e) => {
             error!("Failed to parse user ID: {}", e);
