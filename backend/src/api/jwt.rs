@@ -33,7 +33,7 @@ pub async fn auth(
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let token = cookie_jar
-        .get("token")
+        .get("authToken")
         .map(|cookie| cookie.value().to_string())
         .or_else(|| {
             req.headers()
@@ -48,8 +48,6 @@ pub async fn auth(
                 })
         });
 
-    info!("Token: {:?}", token);
-
     let token = match token {
         Some(token) => token,
         None => {
@@ -61,8 +59,6 @@ pub async fn auth(
         }
     };
 
-    info!("Token: {:?}", token);
-
     let claims = match decode::<TokenClaims>(
         &token,
         &DecodingKey::from_secret(state.config.jwt_secret.as_ref()),
@@ -73,12 +69,10 @@ pub async fn auth(
             info!("Invalid JWT: {}", e);
             return Err((
                 StatusCode::UNAUTHORIZED,
-                Json(json!({ "message": "Invalid JWT" })),
+                Json(json!({ "message": "Invalid or expired JWT" })),
             ));
         }
     };
-
-    info!("Token claims: {:?}", claims);
 
     let user_id = match claims.sub.parse::<i32>() {
         Ok(id) => id,
