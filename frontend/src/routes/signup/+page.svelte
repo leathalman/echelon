@@ -23,7 +23,7 @@
 <div class="flex h-full w-full justify-center items-center">
 	<Card.Root class="w-[380px]">
 		<Card.Header class="flex">
-			<Card.Title class="text-2xl">Welcome back to Echelon</Card.Title>
+			<Card.Title class="text-2xl">Get started with Echelon</Card.Title>
 			<Card.Description class="text-md">Your AI Academic Advisor</Card.Description>
 		</Card.Header>
 		<Card.Content>
@@ -46,14 +46,14 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<a href="/forgot-password" class="text-sm text-muted-foreground underline">Forgot Password?</a>
+				<!--				<a href="/forgot-password" class="text-sm text-muted-foreground underline">Forgot Password?</a>-->
 				<Form.Button class="w-full mt-6">Submit</Form.Button>
 			</form>
 		</Card.Content>
 		<Card.Footer>
 			<div class="flex flex-row w-full items-center justify-center mt-6 text-sm text-muted-foreground">
-				<span class="mr-1">Don't have an account?</span>
-				<a href="/signup" class="underline">Get started.</a>
+				<span class="mr-1">Already have an account?</span>
+				<a href="/login" class="underline">Log in.</a>
 			</div>
 		</Card.Footer>
 	</Card.Root>

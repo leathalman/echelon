@@ -57,7 +57,10 @@
 	</div>
 	<div
 		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
-					shadow-lg border border-black">
+					border border-border focus-within:outline
+					focus-within:outline-ring focus-within:outline-2
+					focus-within:outline-offset-2
+		">
 		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
 									 placeholder="How can I help?" bind:value={query}
 									 onkeydown={handleKeydown}></TextareaPlain>
