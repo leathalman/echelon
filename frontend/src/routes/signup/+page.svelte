@@ -2,7 +2,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import { formSchema, type FormSchema } from './schema';
+	import { formSchema, type FormSchema } from '$lib/auth/schema';
 	import {
 		type SuperValidated,
 		type Infer,
@@ -42,7 +42,7 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Password</Form.Label>
-							<Input {...props} placeholder="" bind:value={$formData.password} />
+							<Input {...props} placeholder="" type="password" bind:value={$formData.password} />
 						{/snippet}
 					</Form.Control>
 					<Form.FieldErrors />
