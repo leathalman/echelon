@@ -32,7 +32,6 @@ export async function login(email: string, password: string) {
 
 	if (res.ok) {
 		const data = await res.json();
-		console.log(data);
 		setAuthToken(data.token);
 		sessionStorage.setItem('token', data.token);
 	} else {
