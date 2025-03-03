@@ -7,7 +7,7 @@
 	import type { Message } from '$lib/api/messages';
 
 	let query = $state('');
-
+	
 	async function handleSubmitQuery() {
 		if (!query.trim()) return;
 

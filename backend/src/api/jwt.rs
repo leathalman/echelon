@@ -33,7 +33,7 @@ pub async fn auth(
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let token = cookie_jar
-        .get("authToken")
+        .get("auth_token")
         .map(|cookie| cookie.value().to_string())
         .or_else(|| {
             req.headers()

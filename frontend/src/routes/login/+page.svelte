@@ -9,6 +9,10 @@
 		superForm
 	} from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { login } from '$lib/auth/auth';
+	import { goto } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button';
+
 
 	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
 		$props();
@@ -18,9 +22,18 @@
 	});
 
 	const { form: formData, enhance } = form;
+
+	async function handleLogin() {
+		try {
+			await login($formData.email, $formData.password);
+			goto('/chat');
+		} catch (error) {
+			console.error(error);
+		}
+	}
 </script>
 
-<div class="flex h-full w-full justify-center items-center">
+<div class="flex h-full w-full justify-center items-center bg-secondary">
 	<Card.Root class="w-[380px]">
 		<Card.Header class="flex">
 			<Card.Title class="text-2xl">Welcome back to Echelon</Card.Title>
@@ -46,14 +59,14 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<a href="/forgot-password" class="text-sm text-muted-foreground underline">Forgot Password?</a>
-				<Form.Button class="w-full mt-6">Submit</Form.Button>
+				<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
+				<Form.Button class="w-full mt-6" onclick={handleLogin}>Continue</Form.Button>
 			</form>
 		</Card.Content>
 		<Card.Footer>
-			<div class="flex flex-row w-full items-center justify-center mt-6 text-sm text-muted-foreground">
+			<div class="flex flex-row w-full items-center justify-center mt-2 text-sm text-muted-foreground">
 				<span class="mr-1">Don't have an account?</span>
-				<a href="/signup" class="underline">Get started.</a>
+				<Button href="/signup" variant="link" class="m-0 p-0">Sign up</Button>
 			</div>
 		</Card.Footer>
 	</Card.Root>

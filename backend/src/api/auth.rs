@@ -188,13 +188,13 @@ pub async fn auth_login_handler(
         }
     };
 
-    let cookie = Cookie::build(("authToken", token.to_owned()))
+    let cookie = Cookie::build(("auth_token", token.to_owned()))
         .path("/")
         .max_age(time::Duration::hours(24))
         .same_site(SameSite::Lax)
         .http_only(true);
 
-    let mut response = Response::new(json!({"authToken": token}).to_string());
+    let mut response = Response::new(json!({"auth_token": token}).to_string());
 
     match cookie.to_string().parse::<HeaderValue>() {
         Ok(cookie_header_value) => {
@@ -216,7 +216,7 @@ pub async fn auth_login_handler(
 // GET /api/auth/logout
 pub async fn auth_logout_handler() -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     // make new cookie to invalid current cookie in the browser
-    let cookie = Cookie::build(("authToken", ""))
+    let cookie = Cookie::build(("auth_token", ""))
         .path("/")
         .max_age(time::Duration::hours(-1))
         .same_site(SameSite::Lax)
