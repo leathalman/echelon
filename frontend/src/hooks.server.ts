@@ -2,7 +2,7 @@ import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const auth_token = String(event.cookies.get('auth_token'));
-	event.locals.auth_token = auth_token;
+	event.locals.jwt = auth_token;
 
 	const publicRoutes = ['/login', '/signup', '/'];
 

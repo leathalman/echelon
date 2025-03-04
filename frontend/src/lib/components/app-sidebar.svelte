@@ -38,7 +38,7 @@
 	let { data } = $props();
 
 	onMount(async () => {
-		await refreshConversations(data.auth_token);
+		await refreshConversations(data.jwt);
 	});
 
 	function handleNewChat() {

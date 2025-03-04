@@ -17,7 +17,7 @@
 		if (!query.trim()) return;
 
 		try {
-			const jwt = data.auth_token;
+			const jwt = data.jwt;
 			const conversationId = await createConversation(jwt);
 
 			await refreshConversations(jwt);
@@ -61,12 +61,7 @@
 	}
 
 	onMount(() => {
-		refreshUser(data.auth_token);
-	});
-
-	$effect(() => {
-		$inspect(userState);
-		$inspect(newChatState);
+		refreshUser(data.jwt);
 	});
 </script>
 

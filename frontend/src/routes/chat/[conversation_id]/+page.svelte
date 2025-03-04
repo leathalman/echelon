@@ -9,6 +9,7 @@
 	import type { Message } from '$lib/model/messages';
 	import { newChatState } from '$lib/state/new-chat.svelte.js';
 	import { refreshConversations } from '$lib/state/conversations.svelte';
+	import { refreshUser } from '$lib/state/user.svelte';
 
 	let { data } = $props();
 
@@ -67,9 +68,11 @@
 		}, 15000);
 	}
 
+	// TODO: lots of extra fetches here, user should be passed down... not fetched
 	async function initializeChat() {
+		await refreshUser(data.jwt)
 		if (conversationId) {
-			await refreshConversations(data.auth_token)
+			await refreshConversations(data.jwt)
 
 			if (newChatState.completionPending) {
 				const userMessage: Message = {
@@ -94,7 +97,7 @@
 	async function loadMessages(id: number) {
 		if (!id || isNaN(id)) return;
 		try {
-			messages = await fetchMessages(data.auth_token, id);
+			messages = await fetchMessages(data.jwt, id);
 
 		} catch (err) {
 			console.error('Error fetching messages:', err);
@@ -116,9 +119,9 @@
 
 			messages = [...messages, userMessage];
 
-			await createMessage(data.auth_token, conversationId, currentQuestion, 'User');
+			await createMessage(data.jwt, conversationId, currentQuestion, 'User');
 
-			const completion = await createCompletion(data.auth_token, messages);
+			const completion = await createCompletion(data.jwt, messages);
 
 			const assistantMessage: Message = {
 				content: completion,
@@ -127,8 +130,8 @@
 
 			messages = [...messages, assistantMessage];
 
-			await createMessage(data.auth_token, conversationId, completion, 'Assistant');
-			await refreshConversations(data.auth_token);
+			await createMessage(data.jwt, conversationId, completion, 'Assistant');
+			await refreshConversations(data.jwt);
 		} catch (error) {
 			console.error('Error sending message:', error);
 		} finally {
