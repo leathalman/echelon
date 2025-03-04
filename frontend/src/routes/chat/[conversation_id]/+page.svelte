@@ -81,7 +81,7 @@
 		}, 30000);
 	}
 
-	$effect(async () => {
+	async function initializeChat() {
 		if (conversationId && browser) {
 			const { refreshConversations } = await import('$lib/state/conversations.svelte');
 			
@@ -104,6 +104,12 @@
 			
 			// Check if we should start polling for completion
 			pollForCompletion();
+		}
+	}
+
+	$effect(() => {
+		if (conversationId && browser) {
+			initializeChat();
 		}
 	});
 

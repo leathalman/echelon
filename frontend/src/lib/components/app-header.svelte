@@ -10,6 +10,6 @@
 		{#if !sidebar.open || sidebar.isMobile}
 			<Sidebar.Trigger variant="outline" />
 		{/if}
-		<span class="text-lg font-semibold text-muted-foreground">EchelonGPT</span>
+		<a href="/chat" class="text-lg font-semibold text-muted-foreground">EchelonGPT</a>
 	</div>
 </div>
