@@ -3,9 +3,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
-	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
-	import type { Message } from '$lib/api/messages';
-	import { newChatParams } from '$lib/state/new-chat.svelte';
+	import { createCompletion, createConversation, createMessage, fetchUser } from '$lib/api/client';
+	import type { Message } from '$lib/model/messages';
+	import { newChatState } from '$lib/state/new-chat.svelte.js';
+	import { refreshUser, userState } from '$lib/state/user.svelte';
+	import { refreshConversations } from '$lib/state/conversations.svelte';
+	import { onMount } from 'svelte';
 
 	let query = $state('');
 	let { data } = $props();
@@ -16,8 +19,6 @@
 		try {
 			const jwt = data.auth_token;
 			const conversationId = await createConversation(jwt);
-
-			const { refreshConversations } = await import('$lib/state/conversations.svelte');
 
 			await refreshConversations(jwt);
 
@@ -30,19 +31,19 @@
 
 			const messages: Message[] = [message];
 
-			newChatParams.initialMessage = query;
-			newChatParams.completionPending = true;
+			newChatState.initialMessage = query;
+			newChatState.completionPending = true;
 
 			createCompletion(jwt, messages)
 				.then(completion => {
-					newChatParams.completionPending = false;
-					newChatParams.completionResult = completion;
+					newChatState.completionPending = false;
+					newChatState.completionResult = completion;
 
 					return createMessage(jwt, conversationId, completion, 'Assistant');
 				})
 				.catch(error => {
-					newChatParams.completionPending = false;
-					newChatParams.completionError = error.message;
+					newChatState.completionPending = false;
+					newChatState.completionError = error.message;
 					console.error('Error in completion:', error);
 				});
 
@@ -58,6 +59,15 @@
 			handleSubmitQuery();
 		}
 	}
+
+	onMount(() => {
+		refreshUser(data.auth_token);
+	});
+
+	$effect(() => {
+		$inspect(userState);
+		$inspect(newChatState);
+	});
 </script>
 
 <div class="flex flex-col basis-[75%] justify-center items-center space-y-5">

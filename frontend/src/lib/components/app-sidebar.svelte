@@ -14,7 +14,8 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { conversations, refreshConversations } from '$lib/state/conversations.svelte';
+	import { conversationsState, refreshConversations } from '$lib/state/conversations.svelte';
+	import { userState } from '$lib/state/user.svelte';
 
 	const items = [
 		{
@@ -37,9 +38,7 @@
 	let { data } = $props();
 
 	onMount(async () => {
-		if (data?.auth_token) {
-			await refreshConversations(data.auth_token);
-		}
+		await refreshConversations(data.auth_token);
 	});
 
 	function handleNewChat() {
@@ -85,7 +84,7 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each conversations as conversation}
+					{#each conversationsState as conversation}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
@@ -107,8 +106,8 @@
 				<Avatar.Fallback>CN</Avatar.Fallback>
 			</Avatar.Root>
 			<div class="flex flex-col leading-tight">
-				<Label class="font-semibold text-base">Harrison Leath</Label>
-				<Label class="text-xs">hleath@me.com</Label>
+				<Label class="font-semibold text-base">{userState.first_name} {userState.last_name}</Label>
+				<Label class="text-xs">{userState.email}</Label>
 			</div>
 		</div>
 	</Sidebar.Footer>

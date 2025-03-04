@@ -4,3 +4,4 @@ pub mod health;
 pub mod completions;
 mod jwt;
 mod conversations;
+mod users;

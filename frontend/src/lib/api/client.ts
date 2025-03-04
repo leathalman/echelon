@@ -1,4 +1,21 @@
-import type { Message } from '$lib/api/messages';
+import type { Message } from '$lib/model/messages';
+
+export async function fetchUser(jwt: string) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/users`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			}
+		});
+		const data = await response.json();
+		return data.user;
+	} catch (error) {
+		console.error(`Failed to fetch user: ${error}`);
+		return [];
+	}
+}
 
 export async function fetchMessages(jwt: string, conversationId: number) {
 	try {

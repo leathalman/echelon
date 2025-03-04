@@ -6,8 +6,9 @@
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { page } from '$app/state';
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
-	import type { Message } from '$lib/api/messages';
-	import { newChatParams } from '$lib/state/new-chat.svelte.js';
+	import type { Message } from '$lib/model/messages';
+	import { newChatState } from '$lib/state/new-chat.svelte.js';
+	import { refreshConversations } from '$lib/state/conversations.svelte';
 
 	let { data } = $props();
 
@@ -26,7 +27,7 @@
 	function pollForCompletion() {
 		if (pollInterval) clearInterval(pollInterval);
 
-		const isPending = newChatParams.completionPending === true;
+		const isPending = newChatState.completionPending === true;
 		if (!isPending) return;
 
 		loading = true;
@@ -34,8 +35,8 @@
 		pollInterval = setInterval(() => {
 
 			try {
-				if (newChatParams.completionPending === false) {
-					const completionResult = newChatParams.completionResult;
+				if (newChatState.completionPending === false) {
+					const completionResult = newChatState.completionResult;
 					if (completionResult) {
 						const assistantMessage: Message = {
 							content: completionResult,
@@ -44,7 +45,7 @@
 						messages = [...messages, assistantMessage];
 					}
 
-					const completionError = newChatParams.completionError;
+					const completionError = newChatState.completionError;
 					if (completionError) {
 						console.error('Completion error:', completionError);
 					}
@@ -68,15 +69,11 @@
 
 	async function initializeChat() {
 		if (conversationId) {
-			const { refreshConversations } = await import('$lib/state/conversations.svelte');
+			await refreshConversations(data.auth_token)
 
-			if (data.auth_token) {
-				await refreshConversations(data.auth_token);
-			}
-
-			if (newChatParams.completionPending) {
+			if (newChatState.completionPending) {
 				const userMessage: Message = {
-					content: newChatParams.initialMessage,
+					content: newChatState.initialMessage,
 					role: 'User'
 				};
 				messages = [userMessage];
@@ -131,11 +128,7 @@
 			messages = [...messages, assistantMessage];
 
 			await createMessage(data.auth_token, conversationId, completion, 'Assistant');
-
-			const { refreshConversations } = await import('$lib/state/conversations.svelte');
-			if (data.auth_token) {
-				await refreshConversations(data.auth_token);
-			}
+			await refreshConversations(data.auth_token);
 		} catch (error) {
 			console.error('Error sending message:', error);
 		} finally {

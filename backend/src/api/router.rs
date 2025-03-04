@@ -9,6 +9,7 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 use crate::api::auth::{auth_login_handler, auth_logout_handler, auth_signup_handler};
 use crate::api::jwt::auth;
+use crate::api::users::user_get_handler;
 
 pub fn create_router(app_state: Arc<AppState>) -> Router {
     // Define a middleware stack with the auth middleware
@@ -29,6 +30,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(conversation_list_messages).post(conversation_new_message_handler),
         )
         .route("/completions", post(completion_new_handler))
+        .route("/users", get(user_get_handler))
         .layer(auth_layer);
 
     // Combine routes and add middleware

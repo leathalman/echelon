@@ -1,9 +1,9 @@
 import { fetchConversations } from '$lib/api/client';
-import type { Conversation } from '$lib/api/conversations';
+import type { Conversation } from '$lib/model/conversations';
 
-export const conversations = $state<Conversation[]>([]);
+export const conversationsState: Conversation[] = $state([]);
 
-export async function refreshConversations(jwt: string): Promise<Conversation[]> {
+export async function refreshConversations(jwt: string) {
 	try {
 		const result = await fetchConversations(jwt);
 		if (result && result.conversations) {
@@ -12,13 +12,10 @@ export async function refreshConversations(jwt: string): Promise<Conversation[]>
 				return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
 			});
 
-			conversations.length = 0;
-			conversations.push(...sortedConversations);
-			return sortedConversations;
+			conversationsState.length = 0;
+			conversationsState.push(...sortedConversations);
 		}
-		return [];
 	} catch (error) {
 		console.error('Error refreshing conversationsSvelte:', error);
-		return [];
 	}
 }

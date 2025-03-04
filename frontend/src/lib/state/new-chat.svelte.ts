@@ -5,7 +5,7 @@ export type NewChatParams = {
 	completionError: string;
 };
 
-export const newChatParams: NewChatParams = $state({
+export const newChatState: NewChatParams = $state({
 	initialMessage: '',
 	completionPending: false,
 	completionResult: '',
