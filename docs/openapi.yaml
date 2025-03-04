@@ -7,14 +7,14 @@ servers:
   - url: https://echelon.com/api
     description: Location of API endpoint for requests
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]
 paths:
   /conversations:
     get:
       operationId: getConversations
       tags:
-        - conversations
-      summary: Get conversations
+        - conversationsSvelte
+      summary: Get conversationsSvelte
       responses:
         "200":
           description: The request was successful, and the server has returned the
@@ -43,13 +43,13 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       security:
-        - BearerJwt: []
-      parameters: []
+        - BearerJwt: [ ]
+      parameters: [ ]
       description: JWT gives user information which is used for conversation look up.
     post:
       operationId: createConversation
       tags:
-        - conversations
+        - conversationsSvelte
       summary: Create conversation
       responses:
         "201":
@@ -78,7 +78,7 @@ paths:
                 required:
                   - message
       security:
-        - BearerJwt: []
+        - BearerJwt: [ ]
       requestBody:
         required: true
         description: ""
@@ -91,13 +91,13 @@ paths:
                   type: string
               required:
                 - title
-      parameters: []
+      parameters: [ ]
       description: Must provide title; user_id from JWT
   /conversations/{conversation_id}/messages:
     get:
       operationId: getMessages
       tags:
-        - conversations
+        - conversationsSvelte
       summary: Get messages
       parameters:
         - $ref: "#/components/parameters/conversation_id"
@@ -131,11 +131,11 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       security:
-        - BearerJwt: []
+        - BearerJwt: [ ]
     post:
       operationId: createMessage
       tags:
-        - conversations
+        - conversationsSvelte
       summary: Create message
       parameters:
         - $ref: "#/components/parameters/conversation_id"
@@ -250,7 +250,7 @@ paths:
                     type: string
                 required:
                   - message
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         description: ""
@@ -353,5 +353,5 @@ components:
       bearerFormat: Json Web Token (JWT)
       scheme: Bearer
 tags:
-  - name: conversations
+  - name: conversationsSvelte
   - name: auth

@@ -14,8 +14,12 @@
 		if (!query.trim()) return;
 
 		try {
-			const jwt = data.auth_token; // copy JWT for when goto executes
+			const jwt = data.auth_token;
 			const conversationId = await createConversation(jwt);
+
+			const { refreshConversations } = await import('$lib/state/conversations.svelte');
+
+			await refreshConversations(jwt);
 
 			await createMessage(jwt, conversationId, query, 'User');
 
@@ -56,7 +60,7 @@
 		} catch (error) {
 			console.error('Error in submitQuery:', error);
 		}
-	};
+	}
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {

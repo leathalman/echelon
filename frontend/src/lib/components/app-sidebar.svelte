@@ -13,10 +13,8 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { onMount } from 'svelte';
-	import { type Conversation } from '$lib/api/conversations';
-	import { fetchConversations } from '$lib/api/client';
 	import { goto } from '$app/navigation';
-	import type { PageProps } from './$types';
+	import { conversations, refreshConversations } from '$lib/state/conversations.svelte';
 
 	const items = [
 		{
@@ -36,14 +34,13 @@
 		}
 	];
 
-	// let conversations = $state<Conversation[]>([]);
-	//
-	// // TODO: see if onMount is the right lifecycle for this
-	// onMount(async () => {
-	// 	conversations = await fetchConversations();
-	// });
+	let { data } = $props();
 
-	let { data }: PageProps = $props();
+	onMount(async () => {
+		if (data?.auth_token) {
+			await refreshConversations(data.auth_token);
+		}
+	});
 
 	function handleNewChat() {
 		goto('/chat');
@@ -88,17 +85,17 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					<!--{#each conversations as conversation}-->
-					<!--	<Sidebar.MenuItem>-->
-					<!--		<Sidebar.MenuButton>-->
-					<!--			{#snippet child({ props })}-->
-					<!--				<a href={`/chat/${conversation.id}`} {...props}>-->
-					<!--					<span class="text-sm">{conversation.title}</span>-->
-					<!--				</a>-->
-					<!--			{/snippet}-->
-					<!--		</Sidebar.MenuButton>-->
-					<!--	</Sidebar.MenuItem>-->
-					<!--{/each}-->
+					{#each conversations as conversation}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton>
+								{#snippet child({ props })}
+									<a href={`/chat/${conversation.id}`} {...props}>
+										<span class="text-sm">{conversation.title}</span>
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+					{/each}
 				</Sidebar.Menu>
 			</Sidebar.GroupContent>
 		</Sidebar.Group>

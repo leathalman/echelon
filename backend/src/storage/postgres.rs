@@ -75,7 +75,7 @@ impl RelationalStorage {
         sqlx::query_as!(
             DBConversation,
             r#"
-            INSERT INTO chat.conversations (owner_id, title)
+            INSERT INTO chat.conversationsSvelte (owner_id, title)
             VALUES ($1, $2)
             RETURNING id, owner_id, title, last_message_at, status as "status!: DBConversationStatus"
             "#,
@@ -94,7 +94,7 @@ impl RelationalStorage {
             DBConversation,
             r#"
             SELECT id, owner_id, title, last_message_at as "last_message_at:DateTime<Utc>", status as "status:_"
-            FROM chat.conversations
+            FROM chat.conversationsSvelte
             WHERE owner_id = $1
             ORDER BY last_message_at
             "#,
@@ -112,7 +112,7 @@ impl RelationalStorage {
             DBConversation,
             r#"
             SELECT id, owner_id, title, last_message_at as "last_message_at:DateTime<Utc>", status as "status:_"
-            FROM chat.conversations
+            FROM chat.conversationsSvelte
             WHERE id = $1
             "#,
             conversation_id
@@ -136,7 +136,7 @@ impl RelationalStorage {
                 RETURNING id, conversation_id, content, role as "role!: DBMessageRole", created_at
             ),
             update_conversation AS (
-                UPDATE chat.conversations
+                UPDATE chat.conversationsSvelte
                 SET last_message_at = CURRENT_TIMESTAMP
                 WHERE id = $1
             )

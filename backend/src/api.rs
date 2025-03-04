@@ -1,5 +1,5 @@
 pub mod auth;
-pub mod conversations;
+pub mod conversationsSvelte;
 pub mod router;
 pub mod health;
 pub mod completions;

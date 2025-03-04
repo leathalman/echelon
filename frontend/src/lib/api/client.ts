@@ -20,7 +20,7 @@ export async function fetchMessages(jwt: string, conversationId: number) {
 	}
 }
 
-// only returns active conversations
+// only returns active conversationsSvelte
 export async function fetchConversations(jwt: string) {
 	try {
 		const response = await fetch('http://localhost:8000/api/conversations', {
@@ -31,9 +31,7 @@ export async function fetchConversations(jwt: string) {
 			}
 		});
 
-		const data = await response.json();
-
-		return data;
+		return await response.json();
 	} catch (error) {
 		console.error('Error:', error);
 		return null;
@@ -49,7 +47,7 @@ export async function createConversation(jwt: string) {
 				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
-				title: 'Untitled'
+				title: 'A NEW TITLE'
 			})
 		});
 

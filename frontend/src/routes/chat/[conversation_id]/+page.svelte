@@ -8,13 +8,15 @@
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { data } = $props()
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
 
-	let messages = $state<Message[]>([]);
+	let messages: Message[] = $state([]);
+
 	let query = $state('');
 
 	let loading = $state(false);
@@ -79,9 +81,14 @@
 		}, 30000);
 	}
 
-	$effect(() => {
+	$effect(async () => {
 		if (conversationId && browser) {
-			// Try to load initial message from sessionStorage
+			const { refreshConversations } = await import('$lib/state/conversations.svelte');
+			
+			if (data.auth_token) {
+				await refreshConversations(data.auth_token);
+			}
+			
 			const initialMessage = sessionStorage.getItem('initialMessage');
 			if (initialMessage) {
 				const userMessage: Message = {
@@ -92,7 +99,7 @@
 				sessionStorage.removeItem('initialMessage');
 			} else {
 				// Load existing messages if there's no initial message
-				loadMessages(conversationId);
+				await loadMessages(conversationId);
 			}
 			
 			// Check if we should start polling for completion
@@ -103,11 +110,8 @@
 	async function loadMessages(id: number) {
 		if (!id || isNaN(id)) return;
 		try {
-			const fetchedMessages = await fetchMessages(data.auth_token, id);
+			messages = await fetchMessages(data.auth_token, id)
 
-			if (messages.length === 0) {
-				messages = fetchedMessages;
-			}
 		} catch (err) {
 			console.error('Error fetching messages:', err);
 		}
@@ -141,6 +145,12 @@
 			messages = [...messages, assistantMessage];
 
 			await createMessage(data.auth_token, conversationId, completion, 'Assistant');
+			
+			// Refresh conversationsSvelte to keep sidebar up-to-date
+			const { refreshConversations } = await import('$lib/state/conversations.svelte');
+			if (data.auth_token) {
+				await refreshConversations(data.auth_token);
+			}
 		} catch (error) {
 			console.error('Error sending message:', error);
 		} finally {
