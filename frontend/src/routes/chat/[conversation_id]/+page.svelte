@@ -15,86 +15,88 @@
 	let query = $state('');
 
 	let loading = $state(false);
+	let { data } = $props();
+	console.log(data);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 	let pollInterval: number;
 
 	// TODO: only poll if there is a current completion request being processed...
-	function pollForCompletion() {
-		if (pollInterval) clearInterval(pollInterval);
+	// function pollForCompletion() {
+	// 	if (pollInterval) clearInterval(pollInterval);
+	//
+	// 	pollInterval = setInterval(async () => {
+	// 		try {
+	// 			const latestMessages: Message[] = await fetchMessages(conversationId);
+	//
+	// 			if (latestMessages.some(m => m.role === 'Assistant')) {
+	// 				messages = latestMessages;
+	// 				clearInterval(pollInterval);
+	// 			}
+	// 		} catch (error) {
+	// 			console.error('Error polling for messages:', error);
+	// 		}
+	// 	}, 1000) as unknown as number;
+	//
+	// 	setTimeout(() => {
+	// 		if (pollInterval) {
+	// 			clearInterval(pollInterval);
+	// 		}
+	// 	}, 30000);
+	// }
+	//
+	// $effect(() => {
+	// 	loadMessages(conversationId);
+	// 	pollForCompletion();
+	// });
+	//
+	// async function loadMessages(id: number) {
+	// 	if (!id || isNaN(id)) return;
+	// 	try {
+	// 		messages = await fetchMessages(id);
+	// 	} catch (err) {
+	// 		console.error(err);
+	// 	}
+	// }
 
-		pollInterval = setInterval(async () => {
-			try {
-				const latestMessages: Message[] = await fetchMessages(conversationId);
-
-				if (latestMessages.some(m => m.role === 'Assistant')) {
-					messages = latestMessages;
-					clearInterval(pollInterval);
-				}
-			} catch (error) {
-				console.error('Error polling for messages:', error);
-			}
-		}, 1000) as unknown as number;
-
-		setTimeout(() => {
-			if (pollInterval) {
-				clearInterval(pollInterval);
-			}
-		}, 30000);
-	}
-
-	$effect(() => {
-		loadMessages(conversationId);
-		pollForCompletion();
-	});
-
-	async function loadMessages(id: number) {
-		if (!id || isNaN(id)) return;
-		try {
-			messages = await fetchMessages(id);
-		} catch (err) {
-			console.error(err);
-		}
-	}
-
-	async function handleSubmitQuery() {
-		loading = true;
-		if (!query.trim()) return;
-
-		try {
-			const userMessage: Message = {
-				content: query,
-				role: 'User',
-			};
-
-			const currentQuestion = query;
-			query = '';
-
-			messages = [...messages, userMessage];
-
-			await createMessage(conversationId, currentQuestion, 'User');
-
-			const completion = await createCompletion(messages);
-
-			const assistantMessage: Message = {
-				content: completion,
-				role: 'Assistant',
-			};
-
-			loading = false;
-
-			messages = [...messages, assistantMessage];
-
-			await createMessage(conversationId, completion, 'Assistant');
-		} catch (error) {
-			console.error('Error sending message:', error);
-		}
-	}
+	// async function handleSubmitQuery() {
+	// 	loading = true;
+	// 	if (!query.trim()) return;
+	//
+	// 	try {
+	// 		const userMessage: Message = {
+	// 			content: query,
+	// 			role: 'User',
+	// 		};
+	//
+	// 		const currentQuestion = query;
+	// 		query = '';
+	//
+	// 		messages = [...messages, userMessage];
+	//
+	// 		await createMessage(conversationId, currentQuestion, 'User');
+	//
+	// 		const completion = await createCompletion(messages);
+	//
+	// 		const assistantMessage: Message = {
+	// 			content: completion,
+	// 			role: 'Assistant',
+	// 		};
+	//
+	// 		loading = false;
+	//
+	// 		messages = [...messages, assistantMessage];
+	//
+	// 		await createMessage(conversationId, completion, 'Assistant');
+	// 	} catch (error) {
+	// 		console.error('Error sending message:', error);
+	// 	}
+	// }
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
-			handleSubmitQuery();
+			// handleSubmitQuery();
 		}
 	}
 </script>
@@ -128,7 +130,7 @@
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">
-				<Button class="w-8 h-8 my-2 mx-2" onclick={handleSubmitQuery}>
+				<Button class="w-8 h-8 my-2 mx-2">
 					<ArrowRight />
 				</Button>
 			</div>

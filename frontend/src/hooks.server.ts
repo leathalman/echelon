@@ -1,4 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
+import { getAuthToken, setAuthToken } from '$lib/auth/token';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const authCookie = event.cookies.get('auth_token');

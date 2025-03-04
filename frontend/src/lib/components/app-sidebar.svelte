@@ -16,6 +16,7 @@
 	import { type Conversation } from '$lib/api/conversations';
 	import { fetchConversations } from '$lib/api/client';
 	import { goto } from '$app/navigation';
+	import type { PageProps } from './$types';
 
 	const items = [
 		{
@@ -35,15 +36,17 @@
 		}
 	];
 
-	let conversations = $state<Conversation[]>([]);
+	// let conversations = $state<Conversation[]>([]);
+	//
+	// // TODO: see if onMount is the right lifecycle for this
+	// onMount(async () => {
+	// 	conversations = await fetchConversations();
+	// });
 
-	// TODO: see if onMount is the right lifecycle for this
-	onMount(async () => {
-		conversations = await fetchConversations();
-	});
+	let { data }: PageProps = $props();
 
 	function handleNewChat() {
-		goto('/');
+		goto('/chat');
 	}
 </script>
 
@@ -85,17 +88,17 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each conversations as conversation}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
-								{#snippet child({ props })}
-									<a href={`/chat/${conversation.id}`} {...props}>
-										<span class="text-sm">{conversation.title}</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
-					{/each}
+					<!--{#each conversations as conversation}-->
+					<!--	<Sidebar.MenuItem>-->
+					<!--		<Sidebar.MenuButton>-->
+					<!--			{#snippet child({ props })}-->
+					<!--				<a href={`/chat/${conversation.id}`} {...props}>-->
+					<!--					<span class="text-sm">{conversation.title}</span>-->
+					<!--				</a>-->
+					<!--			{/snippet}-->
+					<!--		</Sidebar.MenuButton>-->
+					<!--	</Sidebar.MenuItem>-->
+					<!--{/each}-->
 				</Sidebar.Menu>
 			</Sidebar.GroupContent>
 		</Sidebar.Group>

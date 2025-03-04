@@ -7,15 +7,17 @@
 	import type { Message } from '$lib/api/messages';
 
 	let query = $state('');
-	
+
+	let { data } = $props();
+
 	async function handleSubmitQuery() {
 		if (!query.trim()) return;
 
 		try {
-			const conversationId = await createConversation();
+			const conversationId = await createConversation(data.jwt);
 			console.log('Created conversation:', conversationId);
 
-			const result = await createMessage(conversationId, query, 'User');
+			const result = await createMessage(data.jwt, conversationId, query, 'User');
 			console.log('Created message:', result);
 
 			let message: Message = {
@@ -25,9 +27,9 @@
 
 			const messages: Message[] = [message];
 
-			createCompletion(messages)
+			createCompletion(data.jwt, messages)
 				.then(completion => {
-					return createMessage(conversationId, completion, 'Assistant');
+					return createMessage(data.jwt, conversationId, completion, 'Assistant');
 				})
 				.then(result => {
 					console.log('Assistant message created:', result);
@@ -40,7 +42,7 @@
 		} catch (error) {
 			console.error('Error in submitQuery:', error);
 		}
-	}
+	};
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {
@@ -59,13 +61,14 @@
 		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
 					border border-border focus-within:outline
 					focus-within:outline-ring focus-within:outline-2
-					focus-within:outline-offset-2
+					focus-within:outline-offset-2 bg-background
+					shadow-lg
 		">
 		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
 									 placeholder="How can I help?" bind:value={query}
 									 onkeydown={handleKeydown}></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
-			<Button class="w-9 h-9" onclick={handleSubmitQuery}>
+			<Button class="w-9 h-9 rounded-full">
 				<ArrowRight />
 			</Button>
 		</div>

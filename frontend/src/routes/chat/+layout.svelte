@@ -9,7 +9,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar />
-	<main class="flex flex-col flex-grow">
+	<main class="flex flex-col flex-grow bg-background">
 		<AppHeader />
 		{@render children?.()}
 	</main>

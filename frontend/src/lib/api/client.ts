@@ -1,10 +1,16 @@
-import ConversationsResponse from '$lib/api/conversations';
 import type { Message } from '$lib/api/messages';
 
-export async function fetchMessages(conversationId: number) {
+export async function fetchMessages(jwt: string | undefined, conversationId: number) {
 	try {
 		const response = await fetch(
-			`http://localhost:8000/api/conversations/${conversationId}/messages`
+			`http://localhost:8000/api/conversations/${conversationId}/messages`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`
+				}
+			}
 		);
 		const data = await response.json();
 		return data.messages;
@@ -15,25 +21,33 @@ export async function fetchMessages(conversationId: number) {
 }
 
 // only returns active conversations
-export async function fetchConversations() {
+export async function fetchConversations(jwt: string | undefined) {
 	try {
-		const response = await fetch('http://localhost:8000/api/conversations');
+		const response = await fetch('http://localhost:8000/api/conversations', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			}
+		});
+
 		const data = await response.json();
-		const conversationsResponse = new ConversationsResponse(data);
-		conversationsResponse.conversations = conversationsResponse.getActiveConversations();
-		return conversationsResponse.getConversationsSortedByDate();
+		console.log(data);
+
+		return data;
 	} catch (error) {
-		console.error(`Failed to fetch conversations: ${error}`);
-		return [];
+		console.error('Error:', error);
+		return null;
 	}
 }
 
-export async function createConversation() {
+export async function createConversation(jwt: string | undefined) {
 	try {
 		const response = await fetch('http://localhost:8000/api/conversations', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
 				title: 'Untitled'
@@ -48,14 +62,20 @@ export async function createConversation() {
 	}
 }
 
-export async function createMessage(conversationId: number, content: string, role: string) {
+export async function createMessage(
+	jwt: string | undefined,
+	conversationId: number,
+	content: string,
+	role: string
+) {
 	try {
 		const response = await fetch(
 			`http://localhost:8000/api/conversations/${conversationId}/messages`,
 			{
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`
 				},
 				body: JSON.stringify({
 					content: content,
@@ -72,7 +92,7 @@ export async function createMessage(conversationId: number, content: string, rol
 	}
 }
 
-export async function createCompletion(messages: Message[]) {
+export async function createCompletion(jwt: string | undefined, messages: Message[]) {
 	try {
 		const formattedMessages = messages.map((message) => ({
 			content: message.content,
@@ -82,7 +102,8 @@ export async function createCompletion(messages: Message[]) {
 		const response = await fetch(`http://localhost:8000/api/completions`, {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
 				messages: formattedMessages
