@@ -36,15 +36,15 @@ pub async fn conversation_list_handler(
         let error_response = json!({
             "status": "error",
             "code": 500,
-            "message": "Failed to fetch conversationsSvelte"
+            "message": "Failed to fetch conversations"
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
 
-    let conversationsSvelte = query_result.unwrap();
+    let conversations = query_result.unwrap();
 
     let json_response = json!({
-        "conversationsSvelte": conversationsSvelte
+        "conversations": conversations
     });
 
     Ok(Json(json_response))

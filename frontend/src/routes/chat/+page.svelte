@@ -3,7 +3,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
 	import { newChatParams } from '$lib/state/new-chat.svelte';
@@ -34,7 +33,6 @@
 			newChatParams.initialMessage = query;
 			newChatParams.completionPending = true;
 
-			// Start the completion process but don't wait for it
 			createCompletion(jwt, messages)
 				.then(completion => {
 					newChatParams.completionPending = false;

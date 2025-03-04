@@ -13,8 +13,8 @@ paths:
     get:
       operationId: getConversations
       tags:
-        - conversationsSvelte
-      summary: Get conversationsSvelte
+        - conversations
+      summary: Get conversations
       responses:
         "200":
           description: The request was successful, and the server has returned the
@@ -49,7 +49,7 @@ paths:
     post:
       operationId: createConversation
       tags:
-        - conversationsSvelte
+        - conversations
       summary: Create conversation
       responses:
         "201":
@@ -97,7 +97,7 @@ paths:
     get:
       operationId: getMessages
       tags:
-        - conversationsSvelte
+        - conversations
       summary: Get messages
       parameters:
         - $ref: "#/components/parameters/conversation_id"
@@ -135,7 +135,7 @@ paths:
     post:
       operationId: createMessage
       tags:
-        - conversationsSvelte
+        - conversations
       summary: Create message
       parameters:
         - $ref: "#/components/parameters/conversation_id"
@@ -353,5 +353,5 @@ components:
       bearerFormat: Json Web Token (JWT)
       scheme: Bearer
 tags:
-  - name: conversationsSvelte
+  - name: conversations
   - name: auth
