@@ -1,10 +1,10 @@
 import { fetchConversations } from '$lib/api/client';
 
-export async function load({ cookies }) {
-	const jwt = cookies.get('auth_token');
-	const conversations = await fetchConversations(jwt);
+export async function load({ cookies, locals }) {
+	const auth_token = String(locals.auth_token);
+	const conversations = await fetchConversations(auth_token);
 	return {
-		jwt,
+		auth_token,
 		conversations
 	};
 }

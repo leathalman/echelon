@@ -1,8 +1,5 @@
-export async function load({ parent }) {
-	const parentData = await parent();
-	console.log(parentData);
-	// comes up empty?
+export function load({ locals }) {
 	return {
-		...parentData
+		auth_token: String(locals.auth_token)
 	};
 }

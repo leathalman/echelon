@@ -7,6 +7,9 @@
 	import { page } from '$app/state';
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
+	import { browser } from '$app/environment';
+
+	let { data } = $props()
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
@@ -15,88 +18,140 @@
 	let query = $state('');
 
 	let loading = $state(false);
-	let { data } = $props();
-	console.log(data);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 	let pollInterval: number;
 
-	// TODO: only poll if there is a current completion request being processed...
-	// function pollForCompletion() {
-	// 	if (pollInterval) clearInterval(pollInterval);
-	//
-	// 	pollInterval = setInterval(async () => {
-	// 		try {
-	// 			const latestMessages: Message[] = await fetchMessages(conversationId);
-	//
-	// 			if (latestMessages.some(m => m.role === 'Assistant')) {
-	// 				messages = latestMessages;
-	// 				clearInterval(pollInterval);
-	// 			}
-	// 		} catch (error) {
-	// 			console.error('Error polling for messages:', error);
-	// 		}
-	// 	}, 1000) as unknown as number;
-	//
-	// 	setTimeout(() => {
-	// 		if (pollInterval) {
-	// 			clearInterval(pollInterval);
-	// 		}
-	// 	}, 30000);
-	// }
-	//
-	// $effect(() => {
-	// 	loadMessages(conversationId);
-	// 	pollForCompletion();
-	// });
-	//
-	// async function loadMessages(id: number) {
-	// 	if (!id || isNaN(id)) return;
-	// 	try {
-	// 		messages = await fetchMessages(id);
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 	}
-	// }
+	// Poll storage for completion status if pending
+	function pollForCompletion() {
+		if (pollInterval) clearInterval(pollInterval);
+		
+		if (!browser) return;
 
-	// async function handleSubmitQuery() {
-	// 	loading = true;
-	// 	if (!query.trim()) return;
-	//
-	// 	try {
-	// 		const userMessage: Message = {
-	// 			content: query,
-	// 			role: 'User',
-	// 		};
-	//
-	// 		const currentQuestion = query;
-	// 		query = '';
-	//
-	// 		messages = [...messages, userMessage];
-	//
-	// 		await createMessage(conversationId, currentQuestion, 'User');
-	//
-	// 		const completion = await createCompletion(messages);
-	//
-	// 		const assistantMessage: Message = {
-	// 			content: completion,
-	// 			role: 'Assistant',
-	// 		};
-	//
-	// 		loading = false;
-	//
-	// 		messages = [...messages, assistantMessage];
-	//
-	// 		await createMessage(conversationId, completion, 'Assistant');
-	// 	} catch (error) {
-	// 		console.error('Error sending message:', error);
-	// 	}
-	// }
+		// Check if completion is pending
+		const isPending = sessionStorage.getItem('completionPending') === 'true';
+		if (!isPending) return;
+
+		loading = true;
+		
+		pollInterval = setInterval(() => {
+			if (!browser) return;
+			
+			try {
+				// Check if completion finished
+				if (sessionStorage.getItem('completionPending') === 'false') {
+					// Get completion result
+					const completionResult = sessionStorage.getItem('completionResult');
+					if (completionResult) {
+						const assistantMessage: Message = {
+							content: completionResult,
+							role: 'Assistant',
+						};
+						messages = [...messages, assistantMessage];
+						
+						// Clear storage values
+						sessionStorage.removeItem('completionResult');
+					}
+					
+					// Check for error
+					const completionError = sessionStorage.getItem('completionError');
+					if (completionError) {
+						console.error('Completion error:', completionError);
+						sessionStorage.removeItem('completionError');
+					}
+					
+					// Clear pending flag and stop polling
+					sessionStorage.removeItem('completionPending');
+					clearInterval(pollInterval);
+					loading = false;
+				}
+			} catch (error) {
+				console.error('Error polling for completion status:', error);
+			}
+		}, 500) as unknown as number;
+
+		// Set timeout to stop polling after 30 seconds
+		setTimeout(() => {
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				loading = false;
+			}
+		}, 30000);
+	}
+
+	$effect(() => {
+		if (conversationId && browser) {
+			// Try to load initial message from sessionStorage
+			const initialMessage = sessionStorage.getItem('initialMessage');
+			if (initialMessage) {
+				const userMessage: Message = {
+					content: initialMessage,
+					role: 'User',
+				};
+				messages = [userMessage];
+				sessionStorage.removeItem('initialMessage');
+			} else {
+				// Load existing messages if there's no initial message
+				loadMessages(conversationId);
+			}
+			
+			// Check if we should start polling for completion
+			pollForCompletion();
+		}
+	});
+
+	async function loadMessages(id: number) {
+		if (!id || isNaN(id)) return;
+		try {
+			const fetchedMessages = await fetchMessages(data.auth_token, id);
+
+			if (messages.length === 0) {
+				messages = fetchedMessages;
+			}
+		} catch (err) {
+			console.error('Error fetching messages:', err);
+		}
+	}
+
+	async function handleSubmitQuery() {
+		if (!query.trim()) return;
+		loading = true;
+
+		try {
+			const userMessage: Message = {
+				content: query,
+				role: 'User',
+			};
+
+			const currentQuestion = query;
+			query = '';
+
+			messages = [...messages, userMessage];
+
+			await createMessage(data.auth_token, conversationId, currentQuestion, 'User');
+
+			// Add all current messages for context
+			const completion = await createCompletion(data.auth_token, messages);
+
+			const assistantMessage: Message = {
+				content: completion,
+				role: 'Assistant',
+			};
+
+			messages = [...messages, assistantMessage];
+
+			await createMessage(data.auth_token, conversationId, completion, 'Assistant');
+		} catch (error) {
+			console.error('Error sending message:', error);
+		} finally {
+			loading = false;
+		}
+	}
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
-			// handleSubmitQuery();
+			handleSubmitQuery();
 		}
 	}
 </script>
@@ -130,7 +185,7 @@
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">
-				<Button class="w-8 h-8 my-2 mx-2">
+				<Button class="w-8 h-8 my-2 mx-2" onclick={handleSubmitQuery}>
 					<ArrowRight />
 				</Button>
 			</div>

@@ -3,22 +3,21 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
 
 	let query = $state('');
-
 	let { data } = $props();
 
 	async function handleSubmitQuery() {
 		if (!query.trim()) return;
 
 		try {
-			const conversationId = await createConversation(data.jwt);
-			console.log('Created conversation:', conversationId);
+			const jwt = data.auth_token; // copy JWT for when goto executes
+			const conversationId = await createConversation(jwt);
 
-			const result = await createMessage(data.jwt, conversationId, query, 'User');
-			console.log('Created message:', result);
+			await createMessage(jwt, conversationId, query, 'User');
 
 			let message: Message = {
 				role: 'User',
@@ -27,17 +26,32 @@
 
 			const messages: Message[] = [message];
 
-			createCompletion(data.jwt, messages)
+			// Store the query and completion status in sessionStorage
+			if (browser) {
+				sessionStorage.setItem('initialMessage', query);
+				sessionStorage.setItem('completionPending', 'true');
+			}
+
+			// Start the completion process but don't wait for it
+			createCompletion(jwt, messages)
 				.then(completion => {
-					return createMessage(data.jwt, conversationId, completion, 'Assistant');
-				})
-				.then(result => {
-					console.log('Assistant message created:', result);
+					// Mark completion as finished in session storage
+					if (browser) {
+						sessionStorage.setItem('completionPending', 'false');
+						sessionStorage.setItem('completionResult', completion);
+					}
+					return createMessage(jwt, conversationId, completion, 'Assistant');
 				})
 				.catch(error => {
+					// Mark completion as failed
+					if (browser) {
+						sessionStorage.setItem('completionPending', 'false');
+						sessionStorage.setItem('completionError', error.message);
+					}
 					console.error('Error in completion:', error);
 				});
 
+			// Navigate to conversation page
 			await goto(`/chat/${conversationId}`);
 		} catch (error) {
 			console.error('Error in submitQuery:', error);

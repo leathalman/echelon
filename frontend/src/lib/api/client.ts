@@ -1,6 +1,6 @@
 import type { Message } from '$lib/api/messages';
 
-export async function fetchMessages(jwt: string | undefined, conversationId: number) {
+export async function fetchMessages(jwt: string, conversationId: number) {
 	try {
 		const response = await fetch(
 			`http://localhost:8000/api/conversations/${conversationId}/messages`,
@@ -21,7 +21,7 @@ export async function fetchMessages(jwt: string | undefined, conversationId: num
 }
 
 // only returns active conversations
-export async function fetchConversations(jwt: string | undefined) {
+export async function fetchConversations(jwt: string) {
 	try {
 		const response = await fetch('http://localhost:8000/api/conversations', {
 			method: 'GET',
@@ -32,7 +32,6 @@ export async function fetchConversations(jwt: string | undefined) {
 		});
 
 		const data = await response.json();
-		console.log(data);
 
 		return data;
 	} catch (error) {
@@ -41,7 +40,7 @@ export async function fetchConversations(jwt: string | undefined) {
 	}
 }
 
-export async function createConversation(jwt: string | undefined) {
+export async function createConversation(jwt: string) {
 	try {
 		const response = await fetch('http://localhost:8000/api/conversations', {
 			method: 'POST',
@@ -63,7 +62,7 @@ export async function createConversation(jwt: string | undefined) {
 }
 
 export async function createMessage(
-	jwt: string | undefined,
+	jwt: string,
 	conversationId: number,
 	content: string,
 	role: string
@@ -92,7 +91,7 @@ export async function createMessage(
 	}
 }
 
-export async function createCompletion(jwt: string | undefined, messages: Message[]) {
+export async function createCompletion(jwt: string, messages: Message[]) {
 	try {
 		const formattedMessages = messages.map((message) => ({
 			content: message.content,
