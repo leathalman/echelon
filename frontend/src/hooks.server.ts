@@ -1,8 +1,10 @@
 import type { Handle } from '@sveltejs/kit';
+import { fetchUser } from '$lib/api/client';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const auth_token = String(event.cookies.get('auth_token'));
 	event.locals.jwt = auth_token;
+	event.locals.user = await fetchUser(auth_token);
 
 	const publicRoutes = ['/login', '/signup', '/'];
 

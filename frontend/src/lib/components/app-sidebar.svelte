@@ -106,8 +106,8 @@
 				<Avatar.Fallback>CN</Avatar.Fallback>
 			</Avatar.Root>
 			<div class="flex flex-col leading-tight">
-				<Label class="font-semibold text-base">{userState.first_name} {userState.last_name}</Label>
-				<Label class="text-xs">{userState.email}</Label>
+				<Label class="font-semibold text-base">{data.user.first_name} {data.user.last_name}</Label>
+				<Label class="text-xs">{data.user.email}</Label>
 			</div>
 		</div>
 	</Sidebar.Footer>

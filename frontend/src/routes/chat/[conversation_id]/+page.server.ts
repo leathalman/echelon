@@ -1,5 +1,6 @@
 export function load({ locals }) {
 	return {
-		jwt: String(locals.jwt)
+		jwt: String(locals.jwt),
+		user: locals.user
 	};
 }

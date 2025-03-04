@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
-	import { createCompletion, createConversation, createMessage, fetchUser } from '$lib/api/client';
+	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 	import type { Message } from '$lib/model/messages';
 	import { newChatState } from '$lib/state/new-chat.svelte.js';
 	import { refreshUser, userState } from '$lib/state/user.svelte';
@@ -59,10 +59,6 @@
 			handleSubmitQuery();
 		}
 	}
-
-	onMount(() => {
-		refreshUser(data.jwt);
-	});
 </script>
 
 <div class="flex flex-col basis-[75%] justify-center items-center space-y-5">

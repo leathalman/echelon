@@ -9,7 +9,6 @@
 	import type { Message } from '$lib/model/messages';
 	import { newChatState } from '$lib/state/new-chat.svelte.js';
 	import { refreshConversations } from '$lib/state/conversations.svelte';
-	import { refreshUser } from '$lib/state/user.svelte';
 
 	let { data } = $props();
 
@@ -68,12 +67,8 @@
 		}, 15000);
 	}
 
-	// TODO: lots of extra fetches here, user should be passed down... not fetched
 	async function initializeChat() {
-		await refreshUser(data.jwt)
 		if (conversationId) {
-			await refreshConversations(data.jwt)
-
 			if (newChatState.completionPending) {
 				const userMessage: Message = {
 					content: newChatState.initialMessage,
