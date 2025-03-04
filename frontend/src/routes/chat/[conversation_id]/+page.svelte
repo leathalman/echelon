@@ -7,10 +7,9 @@
 	import { page } from '$app/state';
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
-	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { newChatParams } from '$lib/state/new-chat.svelte.js';
 
-	let { data } = $props()
+	let { data } = $props();
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
@@ -24,46 +23,32 @@
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 	let pollInterval: number;
 
-	// Poll storage for completion status if pending
 	function pollForCompletion() {
 		if (pollInterval) clearInterval(pollInterval);
-		
-		if (!browser) return;
 
-		// Check if completion is pending
-		const isPending = sessionStorage.getItem('completionPending') === 'true';
+		const isPending = newChatParams.completionPending === true;
 		if (!isPending) return;
 
 		loading = true;
-		
+
 		pollInterval = setInterval(() => {
-			if (!browser) return;
-			
+
 			try {
-				// Check if completion finished
-				if (sessionStorage.getItem('completionPending') === 'false') {
-					// Get completion result
-					const completionResult = sessionStorage.getItem('completionResult');
+				if (newChatParams.completionPending === false) {
+					const completionResult = newChatParams.completionResult;
 					if (completionResult) {
 						const assistantMessage: Message = {
 							content: completionResult,
-							role: 'Assistant',
+							role: 'Assistant'
 						};
 						messages = [...messages, assistantMessage];
-						
-						// Clear storage values
-						sessionStorage.removeItem('completionResult');
 					}
-					
-					// Check for error
-					const completionError = sessionStorage.getItem('completionError');
+
+					const completionError = newChatParams.completionError;
 					if (completionError) {
 						console.error('Completion error:', completionError);
-						sessionStorage.removeItem('completionError');
 					}
-					
-					// Clear pending flag and stop polling
-					sessionStorage.removeItem('completionPending');
+
 					clearInterval(pollInterval);
 					loading = false;
 				}
@@ -72,43 +57,39 @@
 			}
 		}, 500) as unknown as number;
 
-		// Set timeout to stop polling after 30 seconds
+		// Set timeout to stop polling after 15 seconds
 		setTimeout(() => {
 			if (pollInterval) {
 				clearInterval(pollInterval);
 				loading = false;
 			}
-		}, 30000);
+		}, 15000);
 	}
 
 	async function initializeChat() {
-		if (conversationId && browser) {
+		if (conversationId) {
 			const { refreshConversations } = await import('$lib/state/conversations.svelte');
-			
+
 			if (data.auth_token) {
 				await refreshConversations(data.auth_token);
 			}
-			
-			const initialMessage = sessionStorage.getItem('initialMessage');
-			if (initialMessage) {
+
+			if (newChatParams.completionPending) {
 				const userMessage: Message = {
-					content: initialMessage,
-					role: 'User',
+					content: newChatParams.initialMessage,
+					role: 'User'
 				};
 				messages = [userMessage];
-				sessionStorage.removeItem('initialMessage');
 			} else {
-				// Load existing messages if there's no initial message
 				await loadMessages(conversationId);
 			}
-			
-			// Check if we should start polling for completion
+
 			pollForCompletion();
 		}
 	}
 
 	$effect(() => {
-		if (conversationId && browser) {
+		if (conversationId) {
 			initializeChat();
 		}
 	});
@@ -116,7 +97,7 @@
 	async function loadMessages(id: number) {
 		if (!id || isNaN(id)) return;
 		try {
-			messages = await fetchMessages(data.auth_token, id)
+			messages = await fetchMessages(data.auth_token, id);
 
 		} catch (err) {
 			console.error('Error fetching messages:', err);
@@ -130,7 +111,7 @@
 		try {
 			const userMessage: Message = {
 				content: query,
-				role: 'User',
+				role: 'User'
 			};
 
 			const currentQuestion = query;
@@ -140,19 +121,17 @@
 
 			await createMessage(data.auth_token, conversationId, currentQuestion, 'User');
 
-			// Add all current messages for context
 			const completion = await createCompletion(data.auth_token, messages);
 
 			const assistantMessage: Message = {
 				content: completion,
-				role: 'Assistant',
+				role: 'Assistant'
 			};
 
 			messages = [...messages, assistantMessage];
 
 			await createMessage(data.auth_token, conversationId, completion, 'Assistant');
-			
-			// Refresh conversationsSvelte to keep sidebar up-to-date
+
 			const { refreshConversations } = await import('$lib/state/conversations.svelte');
 			if (data.auth_token) {
 				await refreshConversations(data.auth_token);
@@ -173,31 +152,31 @@
 </script>
 
 <div class="flex flex-col items-center pt-24">
-	<div bind:clientWidth={markdownWidth} style="margin-bottom: {textAreaHeight + 80}px"
-			 class="flex flex-col w-[90%] md:max-w-156 space-y-8">
+	<div bind:clientWidth={markdownWidth} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
+			 style="margin-bottom: {textAreaHeight + 80}px">
 		{#each messages as message}
-				{#if message.role === 'User'}
-					<div class="flex w-full justify-end">
-						<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
-					</div>
-				{:else}
-					<div class="prose">
-						{@html marked(message.content)}
-					</div>
-				{/if}
+			{#if message.role === 'User'}
+				<div class="flex w-full justify-end">
+					<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
+				</div>
+			{:else}
+				<div class="prose">
+					{@html marked(message.content)}
+				</div>
+			{/if}
 		{/each}
 		{#if loading}
 			<span class="text-md">Thinking...</span>
 		{/if}
 	</div>
-	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-background">
+	<div class="fixed bottom-0 pb-6 bg-background" style="width: {markdownWidth}px">
 		<div class="flex flex-row bg-background rounded-lg shadow-lg border justify-between">
 			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
 				<TextareaPlain
 					bind:height={textAreaHeight}
 					bind:value={query}
-					onkeydown={handleKeydown}
 					class="w-full font-medium"
+					onkeydown={handleKeydown}
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">

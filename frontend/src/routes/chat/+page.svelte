@@ -6,6 +6,7 @@
 	import { browser } from '$app/environment';
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 	import type { Message } from '$lib/api/messages';
+	import { newChatParams } from '$lib/state/new-chat.svelte';
 
 	let query = $state('');
 	let { data } = $props();
@@ -30,32 +31,23 @@
 
 			const messages: Message[] = [message];
 
-			// Store the query and completion status in sessionStorage
-			if (browser) {
-				sessionStorage.setItem('initialMessage', query);
-				sessionStorage.setItem('completionPending', 'true');
-			}
+			newChatParams.initialMessage = query;
+			newChatParams.completionPending = true;
 
 			// Start the completion process but don't wait for it
 			createCompletion(jwt, messages)
 				.then(completion => {
-					// Mark completion as finished in session storage
-					if (browser) {
-						sessionStorage.setItem('completionPending', 'false');
-						sessionStorage.setItem('completionResult', completion);
-					}
+					newChatParams.completionPending = false;
+					newChatParams.completionResult = completion;
+
 					return createMessage(jwt, conversationId, completion, 'Assistant');
 				})
 				.catch(error => {
-					// Mark completion as failed
-					if (browser) {
-						sessionStorage.setItem('completionPending', 'false');
-						sessionStorage.setItem('completionError', error.message);
-					}
+					newChatParams.completionPending = false;
+					newChatParams.completionError = error.message;
 					console.error('Error in completion:', error);
 				});
 
-			// Navigate to conversation page
 			await goto(`/chat/${conversationId}`);
 		} catch (error) {
 			console.error('Error in submitQuery:', error);
@@ -82,9 +74,9 @@
 					focus-within:outline-offset-2 bg-background
 					shadow-lg
 		">
-		<TextareaPlain class="text-lg font-semibold mx-1 px-2 my-2"
-									 placeholder="How can I help?" bind:value={query}
-									 onkeydown={handleKeydown}></TextareaPlain>
+		<TextareaPlain bind:value={query}
+									 class="text-lg font-semibold mx-1 px-2 my-2" onkeydown={handleKeydown}
+									 placeholder="How can I help?"></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
 			<Button class="w-9 h-9 rounded-full">
 				<ArrowRight />
