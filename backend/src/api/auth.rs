@@ -22,6 +22,7 @@ pub struct CreateUserSchema {
     pub student_id: String,
     pub first_name: String,
     pub last_name: String,
+    pub university: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -73,6 +74,7 @@ pub async fn auth_signup_handler(
                         &password_hash,
                         &payload.first_name,
                         &payload.last_name,
+                        &payload.university,
                     )
                     .await;
 

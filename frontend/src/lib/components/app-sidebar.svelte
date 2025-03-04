@@ -15,18 +15,11 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { conversationsState, refreshConversations } from '$lib/state/conversations.svelte';
-	import { userState } from '$lib/state/user.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import {
 		BadgeCheck,
-		Bell,
 		ChevronsUpDown,
-		ChevronUp,
-		CreditCard,
-		Ellipsis,
-		LogOut,
-		Sparkles,
-		Star
+		LogOut
 	} from 'lucide-svelte';
 	import { logout } from '$lib/auth/auth';
 

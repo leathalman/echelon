@@ -17,6 +17,8 @@
 	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
 		$props();
 
+	let showLoginFailed: boolean = $state(false);
+
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema)
 	});
@@ -25,10 +27,12 @@
 
 	async function handleLogin() {
 		try {
+			showLoginFailed = false;
 			await login($formData.email, $formData.password);
-			goto('/chat');
+			await goto('/chat');
 		} catch (error) {
 			console.error(error);
+			showLoginFailed = true;
 		}
 	}
 </script>
@@ -59,7 +63,12 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
+				<div class="flex flex-col justify-start items-start">
+					{#if showLoginFailed}
+						<span class="text-sm text-destructive">Incorrect email or password</span>
+					{/if}
+					<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
+				</div>
 				<Form.Button class="w-full mt-6" onclick={handleLogin}>Continue</Form.Button>
 			</form>
 		</Card.Content>

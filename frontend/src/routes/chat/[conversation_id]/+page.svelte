@@ -18,76 +18,9 @@
 	let messages: Message[] = $state([]);
 
 	let query = $state('');
-
 	let loading = $state(false);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
-	let pollInterval: number;
-
-	function pollForCompletion() {
-		if (pollInterval) clearInterval(pollInterval);
-
-		const isPending = newChatState.completionPending === true;
-		if (!isPending) return;
-
-		loading = true;
-
-		pollInterval = setInterval(() => {
-
-			try {
-				if (newChatState.completionPending === false) {
-					const completionResult = newChatState.completionResult;
-					if (completionResult) {
-						const assistantMessage: Message = {
-							content: completionResult,
-							role: 'Assistant'
-						};
-						messages = [...messages, assistantMessage];
-					}
-
-					const completionError = newChatState.completionError;
-					if (completionError) {
-						console.error('Completion error:', completionError);
-					}
-
-					clearInterval(pollInterval);
-					loading = false;
-				}
-			} catch (error) {
-				console.error('Error polling for completion status:', error);
-			}
-		}, 500) as unknown as number;
-
-		// Set timeout to stop polling after 15 seconds
-		setTimeout(() => {
-			if (pollInterval) {
-				clearInterval(pollInterval);
-				loading = false;
-			}
-		}, 15000);
-	}
-
-	async function initializeChat() {
-		if (conversationId) {
-			if (newChatState.completionPending) {
-				const userMessage: Message = {
-					content: newChatState.initialMessage,
-					role: 'User'
-				};
-				messages = [userMessage];
-			} else {
-				await loadMessages(conversationId);
-			}
-
-			pollForCompletion();
-		}
-	}
-
-	$effect(() => {
-		if (conversationId) {
-			initializeChat();
-		}
-	});
 
 	async function loadMessages(id: number) {
 		if (!id || isNaN(id)) return;
@@ -98,6 +31,24 @@
 			console.error('Error fetching messages:', err);
 		}
 	}
+
+	async function initializeChat() {
+		if (newChatState.completionPending) {
+			loading = true
+			const userMessage: Message = {
+				content: newChatState.initialMessage,
+				role: 'User'
+			};
+			messages = [userMessage];
+		} else {
+			loading = false
+			await loadMessages(conversationId);
+		}
+	}
+
+	$effect(() => {
+		initializeChat();
+	});
 
 	async function handleSubmitQuery() {
 		if (!query.trim()) return;
@@ -116,7 +67,7 @@
 
 			await createMessage(data.jwt, conversationId, currentQuestion, 'User');
 
-			const completion = await createCompletion(data.jwt, messages);
+			const completion = await createCompletion(data.jwt, messages, data.user.university);
 
 			const assistantMessage: Message = {
 				content: completion,

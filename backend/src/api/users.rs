@@ -16,6 +16,7 @@ pub struct UserFilteredSchema {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
+    pub university: String,
 }
 
 /// GET /api/users/
@@ -54,6 +55,7 @@ pub async fn user_get_handler(
         first_name: query_result.first_name,
         last_name: query_result.last_name,
         email: query_result.email,
+        university: query_result.university,
     };
 
     let json_response = json!({

@@ -39,6 +39,7 @@ pub struct DBUser {
     pub password_hash: String,
     pub created_at: DateTime<Utc>,
     pub last_login_at: DateTime<Utc>,
+    pub university: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

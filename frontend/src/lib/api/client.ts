@@ -106,7 +106,8 @@ export async function createMessage(
 	}
 }
 
-export async function createCompletion(jwt: string, messages: Message[]) {
+export async function createCompletion(jwt: string, messages: Message[], university: string) {
+	console.log(`University isL: ${university}`);
 	try {
 		const formattedMessages = messages.map((message) => ({
 			content: message.content,
@@ -120,7 +121,8 @@ export async function createCompletion(jwt: string, messages: Message[]) {
 				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
-				messages: formattedMessages
+				messages: formattedMessages,
+				collection: university
 			})
 		});
 

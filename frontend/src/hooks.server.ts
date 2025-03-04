@@ -8,9 +8,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.jwt = auth_token;
 	event.locals.user = user;
 
-	console.log(`Auth token: ${auth_token}`);
-	console.log(`User: ${user}`);
-
 	const publicRoutes = ['/login', '/signup', '/'];
 
 	// If not logged in and trying to access protected route, redirect to landing
@@ -18,7 +15,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		(!auth_token || auth_token === 'null' || auth_token === 'undefined') &&
 		!publicRoutes.includes(event.url.pathname)
 	) {
-		console.log('rerouting to /');
 		return Response.redirect(new URL('/', event.url), 303);
 	}
 
@@ -29,7 +25,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		auth_token !== 'undefined' &&
 		publicRoutes.includes(event.url.pathname)
 	) {
-		console.log('rerouting logged-in user to /chat');
 		return Response.redirect(new URL('/chat', event.url), 303);
 	}
 

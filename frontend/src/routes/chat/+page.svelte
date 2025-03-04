@@ -6,9 +6,7 @@
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
 	import type { Message } from '$lib/model/messages';
 	import { newChatState } from '$lib/state/new-chat.svelte.js';
-	import { refreshUser, userState } from '$lib/state/user.svelte';
 	import { refreshConversations } from '$lib/state/conversations.svelte';
-	import { onMount } from 'svelte';
 
 	let query = $state('');
 	let { data } = $props();
@@ -34,7 +32,7 @@
 			newChatState.initialMessage = query;
 			newChatState.completionPending = true;
 
-			createCompletion(jwt, messages)
+			createCompletion(jwt, messages, data.user.university)
 				.then(completion => {
 					newChatState.completionPending = false;
 					newChatState.completionResult = completion;
