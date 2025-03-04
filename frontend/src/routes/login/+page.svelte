@@ -2,7 +2,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import { formSchema, type FormSchema } from '$lib/auth/schema';
+	import { formSchema, type FormSchema } from './login_schema';
 	import {
 		type SuperValidated,
 		type Infer,
@@ -65,7 +65,7 @@
 				</Form.Field>
 				<div class="flex flex-col justify-start items-start">
 					{#if showLoginFailed}
-						<span class="text-sm text-destructive">Incorrect email or password</span>
+						<span class="text-sm text-destructive font-medium">Incorrect email or password</span>
 					{/if}
 					<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
 				</div>

@@ -2,7 +2,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import { formSchema, type FormSchema } from '$lib/auth/schema';
+	import { formSchema, type FormSchema } from '../signup/signup_schema';
 	import {
 		type SuperValidated,
 		type Infer,
