@@ -2,7 +2,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import { formSchema, type FormSchema } from '../signup/signup_schema';
+	import { formSchema, type FormSchema } from './signup_schema';
 	import {
 		type SuperValidated,
 		type Infer,
@@ -10,6 +10,8 @@
 	} from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { Button } from '$lib/components/ui/button';
+	import { goto } from '$app/navigation';
+	import { newUserState } from '$lib/state/new-user.svelte.js';
 
 	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
 		$props();
@@ -19,6 +21,14 @@
 	});
 
 	const { form: formData, enhance } = form;
+
+	// TODO: dont allow this unless both fields are correctly filled out
+	function handleSignup() {
+		newUserState.email = $formData.email;
+		newUserState.password = $formData.password;
+		goto('/onboarding');
+	}
+
 </script>
 
 <div class="flex h-full w-full justify-center items-center bg-secondary">
@@ -47,7 +57,9 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Button class="w-full mt-6">Submit</Form.Button>
+				<Form.Button disabled={true} class="w-full mt-6" onclick={handleSignup}>
+					Continue
+				</Form.Button>
 			</form>
 		</Card.Content>
 		<Card.Footer>

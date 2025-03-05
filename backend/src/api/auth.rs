@@ -7,7 +7,7 @@ use argon2::{
 use axum::extract::State;
 use axum::http::{header, HeaderValue, Response, StatusCode};
 use axum::response::IntoResponse;
-use axum::{Json};
+use axum::Json;
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
@@ -31,7 +31,7 @@ pub struct LoginUserSchema {
     pub password: String,
 }
 
-// POST /api/auth/sign-up
+// POST /api/auth/signup
 pub async fn auth_signup_handler(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateUserSchema>,
@@ -230,6 +230,5 @@ pub async fn auth_logout_handler() -> Result<impl IntoResponse, (StatusCode, Jso
         .insert(header::SET_COOKIE, cookie.to_string().parse().unwrap());
     Ok(response)
 }
-
 
 // POST /api/auth/reset-password

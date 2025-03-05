@@ -64,7 +64,7 @@ export async function createConversation(jwt: string) {
 				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
-				title: 'A NEW TITLE'
+				title: 'Untitled'
 			})
 		});
 
@@ -107,7 +107,6 @@ export async function createMessage(
 }
 
 export async function createCompletion(jwt: string, messages: Message[], university: string) {
-	console.log(`University isL: ${university}`);
 	try {
 		const formattedMessages = messages.map((message) => ({
 			content: message.content,

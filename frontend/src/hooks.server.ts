@@ -8,7 +8,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.jwt = auth_token;
 	event.locals.user = user;
 
-	const publicRoutes = ['/login', '/signup', '/'];
+	const publicRoutes = ['/', '/login', '/signup', '/onboarding'];
 
 	// If not logged in and trying to access protected route, redirect to landing
 	if (

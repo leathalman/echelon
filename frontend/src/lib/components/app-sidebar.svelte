@@ -21,7 +21,7 @@
 		ChevronsUpDown,
 		LogOut
 	} from 'lucide-svelte';
-	import { logout } from '$lib/auth/auth';
+	import { logout } from '$lib/api/auth';
 
 	const items = [
 		{
