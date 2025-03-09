@@ -42,7 +42,7 @@
 				return; // Exit early if signup fails
 			}
 
-			// Ensure login completes successfully
+			// Ensure login completes successfully -> TO GET COOKIE
 			const loginResult = await login(newUserState.email, newUserState.password);
 			if (!loginResult || loginResult.error) {
 				// Handle login error
@@ -125,7 +125,6 @@
 					<Form.FieldErrors />
 				</Form.Field>
 				<Form.Button
-					disabled={true}
 					class="w-full mt-6" onclick={handleCompleteOnboarding}>Continue
 				</Form.Button>
 			</form>

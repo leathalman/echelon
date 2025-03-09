@@ -57,7 +57,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Button disabled={true} class="w-full mt-6" onclick={handleSignup}>
+				<Form.Button class="w-full mt-6" onclick={handleSignup}>
 					Continue
 				</Form.Button>
 			</form>

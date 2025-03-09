@@ -3,59 +3,51 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { goto } from '$app/navigation';
+	import { type Message, messages } from '$lib/model/messages.svelte';
+	import { conversations } from '$lib/model/conversations.svelte';
 	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
-	import type { Message } from '$lib/model/messages';
-	import { newChatState } from '$lib/state/new-chat.svelte.js';
-	import { refreshConversations } from '$lib/state/conversations.svelte';
+	import { newMessage } from '$lib/model/messages.svelte.js';
 
 	let query = $state('');
 	let { data } = $props();
 
 	async function handleSubmitQuery() {
-		if (!query.trim()) return;
+		const conversationId = await createConversation(data.authToken);
 
-		try {
-			const jwt = data.jwt;
-			const conversationId = await createConversation(jwt);
+		conversations.value.unshift({
+			id: conversationId,
+			last_message_at: '',
+			owner_id: data.user.id,
+			status: 'Active',
+			title: 'Untitled'
+		});
 
-			await refreshConversations(jwt);
+		await createMessage(data.authToken, conversationId, query, 'User');
 
-			await createMessage(jwt, conversationId, query, 'User');
+		newMessage.completionPending = true;
+		newMessage.content = query;
 
-			let message: Message = {
-				role: 'User',
-				content: query
-			};
+		createCompletion(data.authToken, [{
+			role: 'User',
+			content: query
+		}] as Message[], data.user.university)
+			.then(completion => {
+				newMessage.completionPending = false;
+				newMessage.completion = completion;
 
-			const messages: Message[] = [message];
-
-			newChatState.initialMessage = query;
-			newChatState.completionPending = true;
-
-			createCompletion(jwt, messages, data.user.university)
-				.then(completion => {
-					newChatState.completionPending = false;
-					newChatState.completionResult = completion;
-
-					return createMessage(jwt, conversationId, completion, 'Assistant');
-				})
-				.catch(error => {
-					newChatState.completionPending = false;
-					newChatState.completionError = error.message;
-					console.error('Error in completion:', error);
+				messages.value.push({
+					role: 'Assistant',
+					content: completion
 				});
 
-			await goto(`/chat/${conversationId}`);
-		} catch (error) {
-			console.error('Error in submitQuery:', error);
-		}
-	}
+				return createMessage(data.authToken, conversationId, completion, 'Assistant');
+			})
+			.catch(error => {
+				newMessage.completionPending = false;
+				console.error('Error in completion:', error);
+			});
 
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault();
-			handleSubmitQuery();
-		}
+		await goto(`/chat/${conversationId}`);
 	}
 </script>
 
@@ -72,10 +64,10 @@
 					shadow-lg
 		">
 		<TextareaPlain bind:value={query}
-									 class="text-lg font-semibold mx-1 px-2 my-2" onkeydown={handleKeydown}
+									 class="text-lg font-semibold mx-1 px-2 my-2"
 									 placeholder="How can I help?"></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
-			<Button class="w-9 h-9 rounded-full">
+			<Button class="w-9 h-9 rounded-full" onclick={handleSubmitQuery}>
 				<ArrowRight />
 			</Button>
 		</div>

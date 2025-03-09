@@ -29,37 +29,36 @@
 	// TODO: dont allow this unless both fields are correctly filled out
 	// TODO: replace alert with something better
 	async function handleLogin() {
-		console.log(errors);
-		// try {
-		// 	showLoginFailed = false;
-		//
-		// 	// Attempt the login API call
-		// 	await login($formData.email, $formData.password);
-		//
-		// 	// Redirect user upon successful login
-		// 	await goto('/chat');
-		// } catch (error: unknown) {
-		// 	// Log the error for debugging purposes
-		// 	console.error(error);
-		//
-		// 	// Handle different error scenarios
-		// 	if (error instanceof Response) {
-		// 		// Handle HTTP errors returned by the `login` API
-		// 		if (error.status === 401) {
-		// 			// Unauthorized: Incorrect email or password
-		// 			showLoginFailed = true;
-		// 		} else if (error.status >= 500) {
-		// 			// Server-side error
-		// 			alert('An error occurred on the server. Please try again later.');
-		// 		} else {
-		// 			// Other HTTP response scenarios
-		// 			alert('An unexpected error occurred. Please try again.');
-		// 		}
-		// 	} else {
-		// 		// Fallback for unknown errors, such as network or parse errors
-		// 		alert('A network error occurred. Please check your internet connection and try again.');
-		// 	}
-		// }
+		try {
+			showLoginFailed = false;
+
+			// Attempt the login API call
+			await login($formData.email, $formData.password);
+
+			// Redirect user upon successful login
+			await goto('/chat');
+		} catch (error: unknown) {
+			// Log the error for debugging purposes
+			console.error(error);
+
+			// Handle different error scenarios
+			if (error instanceof Response) {
+				// Handle HTTP errors returned by the `login` API
+				if (error.status === 401) {
+					// Unauthorized: Incorrect email or password
+					showLoginFailed = true;
+				} else if (error.status >= 500) {
+					// Server-side error
+					alert('An error occurred on the server. Please try again later.');
+				} else {
+					// Other HTTP response scenarios
+					alert('An unexpected error occurred. Please try again.');
+				}
+			} else {
+				// Fallback for unknown errors, such as network or parse errors
+				alert('A network error occurred. Please check your internet connection and try again.');
+			}
+		}
 	}
 </script>
 
@@ -95,8 +94,8 @@
 					{/if}
 					<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
 				</div>
-				<Form.Button disabled={true}
-										 class="w-full mt-6" onclick={handleLogin}>Continue
+				<Form.Button
+					class="w-full mt-6" onclick={handleLogin}>Continue
 				</Form.Button>
 			</form>
 		</Card.Content>

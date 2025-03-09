@@ -6,89 +6,55 @@
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { page } from '$app/state';
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
-	import type { Message } from '$lib/model/messages';
-	import { newChatState } from '$lib/state/new-chat.svelte.js';
-	import { refreshConversations } from '$lib/state/conversations.svelte';
+	import { type Message, messages } from '$lib/model/messages.svelte';
+	import { newMessage } from '$lib/model/messages.svelte.js';
 
 	let { data } = $props();
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
 
-	let messages: Message[] = $state([]);
-
 	let query = $state('');
-	let loading = $state(false);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 
-	async function loadMessages(id: number) {
-		if (!id || isNaN(id)) return;
-		try {
-			messages = await fetchMessages(data.jwt, id);
-
-		} catch (err) {
-			console.error('Error fetching messages:', err);
-		}
-	}
-
-	async function initializeChat() {
-		if (newChatState.completionPending) {
-			loading = true
-			const userMessage: Message = {
-				content: newChatState.initialMessage,
-				role: 'User'
-			};
-			messages = [userMessage];
-		} else {
-			loading = false
-			await loadMessages(conversationId);
-		}
-	}
-
 	$effect(() => {
-		initializeChat();
+		// save messages into rune for use when updating ui directly
+		messages.value = data.messages;
 	});
 
 	async function handleSubmitQuery() {
-		if (!query.trim()) return;
-		loading = true;
+		newMessage.completionPending = true
 
 		try {
 			const userMessage: Message = {
 				content: query,
-				role: 'User'
-			};
+				role: 'User',
+			}
 
-			const currentQuestion = query;
-			query = '';
+			// reset UI textbox
+			query = ''
 
-			messages = [...messages, userMessage];
+			// update UI
+			messages.value.push(userMessage)
 
-			await createMessage(data.jwt, conversationId, currentQuestion, 'User');
+			await createMessage(data.authToken, conversationId, userMessage.content, userMessage.role);
 
-			const completion = await createCompletion(data.jwt, messages, data.user.university);
+			const completion = await createCompletion(data.authToken, messages.value, data.user.university);
 
 			const assistantMessage: Message = {
 				content: completion,
 				role: 'Assistant'
-			};
+			}
 
-			messages = [...messages, assistantMessage];
+			// update UI
+			messages.value.push(assistantMessage)
 
-			await createMessage(data.jwt, conversationId, completion, 'Assistant');
-			await refreshConversations(data.jwt);
+			await createMessage(data.authToken, conversationId, completion, 'Assistant');
 		} catch (error) {
-			console.error('Error sending message:', error);
+			console.error('Error sending message:', error)
 		} finally {
-			loading = false;
-		}
-	}
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault();
-			handleSubmitQuery();
+			newMessage.completionPending = false
 		}
 	}
 </script>
@@ -96,7 +62,7 @@
 <div class="flex flex-col items-center pt-24">
 	<div bind:clientWidth={markdownWidth} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
 			 style="margin-bottom: {textAreaHeight + 80}px">
-		{#each messages as message}
+		{#each data.messages as message}
 			{#if message.role === 'User'}
 				<div class="flex w-full justify-end">
 					<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
@@ -107,7 +73,7 @@
 				</div>
 			{/if}
 		{/each}
-		{#if loading}
+		{#if newMessage.completionPending}
 			<span class="text-md">Thinking...</span>
 		{/if}
 	</div>
@@ -118,7 +84,6 @@
 					bind:height={textAreaHeight}
 					bind:value={query}
 					class="w-full font-medium"
-					onkeydown={handleKeydown}
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">

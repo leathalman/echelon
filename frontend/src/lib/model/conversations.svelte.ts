@@ -5,3 +5,7 @@ export type Conversation = {
 	status: string;
 	title: string;
 };
+
+export const conversations = $state({
+	value: [] as Conversation[]
+});

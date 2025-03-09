@@ -14,14 +14,16 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { conversationsState, refreshConversations } from '$lib/state/conversations.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { conversations } from '$lib/model/conversations.svelte';
 	import {
 		BadgeCheck,
 		ChevronsUpDown,
 		LogOut
 	} from 'lucide-svelte';
 	import { logout } from '$lib/api/auth';
+
+	let { data } = $props();
 
 	const items = [
 		{
@@ -40,12 +42,6 @@
 			// icon: Settings
 		}
 	];
-
-	let { data } = $props();
-
-	onMount(async () => {
-		await refreshConversations(data.jwt);
-	});
 
 	function handleNewChat() {
 		goto('/chat');
@@ -90,7 +86,7 @@
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each conversationsState as conversation}
+					{#each conversations.value as conversation}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}

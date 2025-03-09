@@ -1,4 +1,4 @@
-import type { Message } from '$lib/model/messages';
+import type { Message } from '$lib/model/messages.svelte';
 
 export async function fetchUser(jwt: string) {
 	try {
