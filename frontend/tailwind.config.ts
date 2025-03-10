@@ -1,10 +1,11 @@
 import type { Config } from 'tailwindcss';
 import { fontFamily } from 'tailwindcss/defaultTheme';
+import animate from 'tailwindcss-animate';
 
 const config: Config = {
 	darkMode: ['class'],
 	content: ['./src/**/*.{html,js,svelte,ts}'],
-	plugins: [require('@tailwindcss/typography')],
+	plugins: [require('@tailwindcss/typography'), animate],
 	safelist: ['dark'],
 	theme: {
 		container: {

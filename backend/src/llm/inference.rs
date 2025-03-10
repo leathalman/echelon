@@ -36,7 +36,7 @@ pub struct InferenceOptions {
     // Maximum number of tokens to generate (Default: -1, infinite generation)
     pub max_tokens: Option<i32>,
     // Size of the context window in tokens (Default: 32768)
-    pub context_window: Option<u32>,
+    pub context_window: Option<u64>,
     // Sampling temperature - higher values increase creativity (Default: 0.8)
     pub temperature: Option<f32>,
 }
@@ -57,7 +57,7 @@ impl InferenceOptions {
         self
     }
 
-    pub fn context_window(mut self, size: u32) -> Self {
+    pub fn context_window(mut self, size: u64) -> Self {
         self.context_window = Some(size);
         self
     }

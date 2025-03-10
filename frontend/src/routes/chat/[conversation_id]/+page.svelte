@@ -6,124 +6,83 @@
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { page } from '$app/state';
 	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
-	import type { Message } from '$lib/api/messages';
+	import { type Message, messages } from '$lib/model/messages.svelte';
+	import { newMessage } from '$lib/model/messages.svelte.js';
+
+	let { data } = $props();
 
 	let markdownWidth = $state();
 	let textAreaHeight = $state(25);
 
-	let messages = $state<Message[]>([]);
 	let query = $state('');
 
-	let loading = $state(false);
-
 	const conversationId = $derived(parseInt(page.params.conversation_id));
-	let pollInterval: number;
-
-	// TODO: only poll if there is a current completion request being processed...
-	function pollForCompletion() {
-		if (pollInterval) clearInterval(pollInterval);
-
-		pollInterval = setInterval(async () => {
-			try {
-				const latestMessages: Message[] = await fetchMessages(conversationId);
-
-				if (latestMessages.some(m => m.role === 'Assistant')) {
-					messages = latestMessages;
-					clearInterval(pollInterval);
-				}
-			} catch (error) {
-				console.error('Error polling for messages:', error);
-			}
-		}, 1000) as unknown as number;
-
-		setTimeout(() => {
-			if (pollInterval) {
-				clearInterval(pollInterval);
-			}
-		}, 30000);
-	}
 
 	$effect(() => {
-		loadMessages(conversationId);
-		pollForCompletion();
+		// save messages into rune for use when updating ui directly
+		messages.value = data.messages;
 	});
 
-	async function loadMessages(id: number) {
-		if (!id || isNaN(id)) return;
-		try {
-			messages = await fetchMessages(id);
-		} catch (err) {
-			console.error(err);
-		}
-	}
-
 	async function handleSubmitQuery() {
-		loading = true;
-		if (!query.trim()) return;
+		newMessage.completionPending = true
 
 		try {
 			const userMessage: Message = {
 				content: query,
 				role: 'User',
-			};
+			}
 
-			const currentQuestion = query;
-			query = '';
+			// reset UI textbox
+			query = ''
 
-			messages = [...messages, userMessage];
+			// update UI
+			messages.value.push(userMessage)
 
-			await createMessage(conversationId, currentQuestion, 'User');
+			await createMessage(data.authToken, conversationId, userMessage.content, userMessage.role);
 
-			const completion = await createCompletion(messages);
+			const completion = await createCompletion(data.authToken, messages.value, data.user.university);
 
 			const assistantMessage: Message = {
 				content: completion,
-				role: 'Assistant',
-			};
+				role: 'Assistant'
+			}
 
-			loading = false;
+			// update UI
+			messages.value.push(assistantMessage)
 
-			messages = [...messages, assistantMessage];
-
-			await createMessage(conversationId, completion, 'Assistant');
+			await createMessage(data.authToken, conversationId, completion, 'Assistant');
 		} catch (error) {
-			console.error('Error sending message:', error);
-		}
-	}
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault();
-			handleSubmitQuery();
+			console.error('Error sending message:', error)
+		} finally {
+			newMessage.completionPending = false
 		}
 	}
 </script>
 
 <div class="flex flex-col items-center pt-24">
-	<div bind:clientWidth={markdownWidth} style="margin-bottom: {textAreaHeight + 80}px"
-			 class="flex flex-col w-[90%] md:max-w-156 space-y-8">
-		{#each messages as message}
-				{#if message.role === 'User'}
-					<div class="flex w-full justify-end">
-						<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
-					</div>
-				{:else}
-					<div class="prose">
-						{@html marked(message.content)}
-					</div>
-				{/if}
+	<div bind:clientWidth={markdownWidth} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
+			 style="margin-bottom: {textAreaHeight + 80}px">
+		{#each data.messages as message}
+			{#if message.role === 'User'}
+				<div class="flex w-full justify-end">
+					<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
+				</div>
+			{:else}
+				<div class="prose">
+					{@html marked(message.content)}
+				</div>
+			{/if}
 		{/each}
-		{#if loading}
+		{#if newMessage.completionPending}
 			<span class="text-md">Thinking...</span>
 		{/if}
 	</div>
-	<div style="width: {markdownWidth}px" class="fixed bottom-0 pb-6 bg-background">
+	<div class="fixed bottom-0 pb-6 bg-background" style="width: {markdownWidth}px">
 		<div class="flex flex-row bg-background rounded-lg shadow-lg border justify-between">
 			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
 				<TextareaPlain
 					bind:height={textAreaHeight}
 					bind:value={query}
-					onkeydown={handleKeydown}
 					class="w-full font-medium"
 					placeholder="What else would you like to know?" />
 			</div>

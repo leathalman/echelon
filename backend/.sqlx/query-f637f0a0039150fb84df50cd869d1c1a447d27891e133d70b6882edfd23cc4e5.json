@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO chat.conversations (owner_id, title)\n            VALUES ($1, $2)\n            RETURNING id, owner_id, title, last_message_at, status as \"status!: ConversationStatus\"\n            ",
+  "query": "\n            INSERT INTO chat.conversations (owner_id, title)\n            VALUES ($1, $2)\n            RETURNING id, owner_id, title, last_message_at, status as \"status!: DBConversationStatus\"\n            ",
   "describe": {
     "columns": [
       {
@@ -25,7 +25,7 @@
       },
       {
         "ordinal": 4,
-        "name": "status!: ConversationStatus",
+        "name": "status!: DBConversationStatus",
         "type_info": {
           "Custom": {
             "name": "chat.conversation_status",
@@ -55,5 +55,5 @@
       false
     ]
   },
-  "hash": "5e4325b5b5ab76cc33f015db3ab640b13a06e376403359faa3e09320749110b8"
+  "hash": "f637f0a0039150fb84df50cd869d1c1a447d27891e133d70b6882edfd23cc4e5"
 }

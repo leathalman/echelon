@@ -7,7 +7,7 @@ servers:
   - url: https://echelon.com/api
     description: Location of API endpoint for requests
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]
 paths:
   /conversations:
     get:
@@ -43,8 +43,8 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       security:
-        - BearerJwt: []
-      parameters: []
+        - BearerJwt: [ ]
+      parameters: [ ]
       description: JWT gives user information which is used for conversation look up.
     post:
       operationId: createConversation
@@ -78,7 +78,7 @@ paths:
                 required:
                   - message
       security:
-        - BearerJwt: []
+        - BearerJwt: [ ]
       requestBody:
         required: true
         description: ""
@@ -91,7 +91,7 @@ paths:
                   type: string
               required:
                 - title
-      parameters: []
+      parameters: [ ]
       description: Must provide title; user_id from JWT
   /conversations/{conversation_id}/messages:
     get:
@@ -131,7 +131,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       security:
-        - BearerJwt: []
+        - BearerJwt: [ ]
     post:
       operationId: createMessage
       tags:
@@ -250,7 +250,7 @@ paths:
                     type: string
                 required:
                   - message
-      parameters: []
+      parameters: [ ]
       requestBody:
         required: true
         description: ""

@@ -7,16 +7,22 @@ use backend::storage::vector::{VectorStorage, VectorStorageBackend};
 use fastembed::EmbeddingModel;
 use std::error::Error;
 use std::path::Path;
+use backend::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let vectordb = vector::build(VectorStorageBackend::Qdrant)?;
+    dotenv::dotenv().ok();
+    let config = Config::init();
+
+    let db_collection = "course_catalog";
+
+    let vectordb = vector::build(VectorStorageBackend::Qdrant, &config.qdrant_url).unwrap();
 
     vectordb
-        .create_collection("some_collection", EmbeddingModel::AllMiniLML6V2)
+        .create_collection(db_collection, EmbeddingModel::AllMiniLML6V2)
         .await?;
 
-    let document = Document::new(Path::new("./data/John_V_Roach_Honors_College.md"))?;
+    let document = Document::new(Path::new("./data/course_catalog.md"))?;
 
     let chunks = chunk(document.content)?;
 
@@ -24,7 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let vectors = compile_vectors(document.file_name, chunks, embeddings)?;
 
-    vectordb.add_vectors("some_collection", vectors).await?;
+    vectordb.add_vectors(db_collection, vectors).await?;
 
     Ok(())
 }

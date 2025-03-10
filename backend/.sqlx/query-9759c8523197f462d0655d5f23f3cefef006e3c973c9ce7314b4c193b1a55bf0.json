@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO chat.users (student_id, email, password_hash)\n            VALUES ($1, $2, $3)\n            RETURNING id, student_id, email, password_hash, created_at, last_login_at\n            ",
+  "query": "\n            INSERT INTO chat.users (email, password_hash)\n            VALUES ($1, $2)\n            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university\n            ",
   "describe": {
     "columns": [
       {
@@ -25,30 +25,47 @@
       },
       {
         "ordinal": 4,
+        "name": "first_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 5,
+        "ordinal": 7,
         "name": "last_login_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "university",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Varchar",
         "Varchar",
         "Varchar"
       ]
     },
     "nullable": [
       false,
+      true,
       false,
       false,
+      true,
+      true,
       false,
       false,
-      false
+      true
     ]
   },
-  "hash": "1a89f8d5aa396f7b60406d63980534013c488b74f04ce945735332d5d8759ded"
+  "hash": "9759c8523197f462d0655d5f23f3cefef006e3c973c9ce7314b4c193b1a55bf0"
 }

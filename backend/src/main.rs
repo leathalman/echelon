@@ -4,6 +4,7 @@ use axum::http::{
 };
 use backend::api::router::create_router;
 use backend::app_state::AppState;
+use backend::config::Config;
 use backend::llm::inference;
 use backend::llm::model::Model::Llama3_11b;
 use backend::storage::postgres::RelationalStorage;
@@ -24,26 +25,25 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let deployment_url = std::env::var("DEPLOYMENT_URL").expect("DEPLOYMENT_URL must be set");
-    let relational_database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let qdrant_url = std::env::var("QDRANT_URL").expect("QDRANT_URL must be set");
+    let config = Config::init();
 
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE])
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
+    let listener = tokio::net::TcpListener::bind(&config.deployment_url).await.unwrap();
+
     let app = create_router(Arc::new(AppState {
-        relational_storage: RelationalStorage::new(&relational_database_url)
+        relational_storage: RelationalStorage::new(&config.postgres_url)
             .await
             .unwrap(),
-        vector_storage: QdrantAdapter::new(&qdrant_url).unwrap(),
+        vector_storage: QdrantAdapter::new(&config.qdrant_url).unwrap(),
         llm: inference::build(Llama3_11b),
+        config,
     }))
         .layer(cors);
-
-    let listener = tokio::net::TcpListener::bind(deployment_url).await.unwrap();
 
     info!("Axum is up.");
 

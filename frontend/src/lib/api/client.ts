@@ -1,10 +1,33 @@
-import ConversationsResponse from '$lib/api/conversations';
-import type { Message } from '$lib/api/messages';
+import type { Message } from '$lib/model/messages.svelte';
 
-export async function fetchMessages(conversationId: number) {
+export async function fetchUser(jwt: string) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/users`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			}
+		});
+		const data = await response.json();
+		return data.user;
+	} catch (error) {
+		console.error(`Failed to fetch user: ${error}`);
+		return [];
+	}
+}
+
+export async function fetchMessages(jwt: string, conversationId: number) {
 	try {
 		const response = await fetch(
-			`http://localhost:8000/api/conversations/${conversationId}/messages`
+			`http://localhost:8000/api/conversations/${conversationId}/messages`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`
+				}
+			}
 		);
 		const data = await response.json();
 		return data.messages;
@@ -14,26 +37,31 @@ export async function fetchMessages(conversationId: number) {
 	}
 }
 
-// only returns active conversations
-export async function fetchConversations() {
+// only returns active conversationsSvelte
+export async function fetchConversations(jwt: string) {
 	try {
-		const response = await fetch('http://localhost:8000/api/conversations');
-		const data = await response.json();
-		const conversationsResponse = new ConversationsResponse(data);
-		conversationsResponse.conversations = conversationsResponse.getActiveConversations();
-		return conversationsResponse.getConversationsSortedByDate();
+		const response = await fetch('http://localhost:8000/api/conversations', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			}
+		});
+
+		return await response.json();
 	} catch (error) {
-		console.error(`Failed to fetch conversations: ${error}`);
-		return [];
+		console.error('Error:', error);
+		return null;
 	}
 }
 
-export async function createConversation() {
+export async function createConversation(jwt: string) {
 	try {
 		const response = await fetch('http://localhost:8000/api/conversations', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
 				title: 'Untitled'
@@ -48,14 +76,20 @@ export async function createConversation() {
 	}
 }
 
-export async function createMessage(conversationId: number, content: string, role: string) {
+export async function createMessage(
+	jwt: string,
+	conversationId: number,
+	content: string,
+	role: string
+) {
 	try {
 		const response = await fetch(
 			`http://localhost:8000/api/conversations/${conversationId}/messages`,
 			{
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${jwt}`
 				},
 				body: JSON.stringify({
 					content: content,
@@ -72,7 +106,7 @@ export async function createMessage(conversationId: number, content: string, rol
 	}
 }
 
-export async function createCompletion(messages: Message[]) {
+export async function createCompletion(jwt: string, messages: Message[], university: string) {
 	try {
 		const formattedMessages = messages.map((message) => ({
 			content: message.content,
@@ -82,10 +116,12 @@ export async function createCompletion(messages: Message[]) {
 		const response = await fetch(`http://localhost:8000/api/completions`, {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
 			},
 			body: JSON.stringify({
-				messages: formattedMessages
+				messages: formattedMessages,
+				collection: university
 			})
 		});
 
@@ -94,5 +130,40 @@ export async function createCompletion(messages: Message[]) {
 	} catch (error) {
 		console.error('Error:', error);
 		return '';
+	}
+}
+
+export async function updateUser(jwt: string, studentId: string, firstName: string, lastName: string, university: string): Promise<{ success: boolean; error?: string }> {
+	try {
+		const response = await fetch('http://localhost:8000/api/users', {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			},
+			body: JSON.stringify({
+				student_id: studentId,
+				first_name: firstName,
+				last_name: lastName,
+				university: university
+			})
+		});
+
+		// Handle non-2xx responses properly
+		if (!response.ok) {
+			const errorData = await response.json(); // assuming the API provides error details
+			return { success: false, error: errorData.message || 'User update failed' };
+		}
+
+		// If successful, return success
+		await response.json();
+		return { success: true };
+	} catch (error) {
+		// Catch any network or unexpected errors
+		console.error('Error:', error);
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'Unknown error occurred'
+		};
 	}
 }

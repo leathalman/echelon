@@ -32,6 +32,21 @@
         "ordinal": 5,
         "name": "last_login_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "first_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "university",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
@@ -41,11 +56,14 @@
     },
     "nullable": [
       false,
+      true,
       false,
       false,
       false,
       false,
-      false
+      true,
+      true,
+      true
     ]
   },
   "hash": "4ffe225714ed1dacda2034709682930d993291d0b8e75649cb3ef06fc22f5d14"
