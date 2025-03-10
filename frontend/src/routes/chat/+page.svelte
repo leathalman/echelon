@@ -19,7 +19,7 @@
 			last_message_at: '',
 			owner_id: data.user.id,
 			status: 'Active',
-			title: 'Untitled'
+			title: 'Placeholder'
 		});
 
 		await createMessage(data.authToken, conversationId, query, 'User');
