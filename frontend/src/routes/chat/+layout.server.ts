@@ -20,8 +20,8 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 			// Ensure conversations is not null/undefined
 			const conversations: Conversation[] = conversationsResponse?.conversations
 				? [...conversationsResponse.conversations].sort((a, b) => {
-						return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
-					})
+					return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+				})
 				: [];
 
 			return { authToken, user, conversations };

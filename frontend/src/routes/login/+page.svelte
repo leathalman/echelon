@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
+	import * as Alert from "$lib/components/ui/alert/index.js";
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './login_schema';
 	import {
 		type SuperValidated,
@@ -12,52 +13,37 @@
 	import { login } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import { page } from '$app/state';
+	import CircleAlert from "lucide-svelte/icons/circle-alert";
+	import Cookies from 'js-cookie';
 
 
 	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
 		$props();
 
-	let showLoginFailed: boolean = $state(false);
-
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema)
 	});
 
-	const { form: formData, enhance, errors } = form;
+	const { form: formData, enhance, validateForm } = form;
 
-	// TODO: replace alert with something better
+	let loginFailed = $state(false)
+
 	async function handleLogin() {
-		if (data.form.valid) {
+		const formValidation = await validateForm();
+
+		if (formValidation.valid) {
 			try {
-				showLoginFailed = false;
-
-				// Attempt the login API call
-				await login($formData.email, $formData.password);
-
-				// Redirect user upon successful login
-				await goto('/chat');
-			} catch (error: unknown) {
-				// Log the error for debugging purposes
-				console.error(error);
-
-				// Handle different error scenarios
-				if (error instanceof Response) {
-					// Handle HTTP errors returned by the `login` API
-					if (error.status === 401) {
-						// Unauthorized: Incorrect email or password
-						showLoginFailed = true;
-					} else if (error.status >= 500) {
-						// Server-side error
-						alert('An error occurred on the server. Please try again later.');
-					} else {
-						// Other HTTP response scenarios
-						alert('An unexpected error occurred. Please try again.');
-					}
+				const loginResponse = await login($formData.email, $formData.password);
+				if (loginResponse.success) {
+					loginFailed = false
+					Cookies.set("onboarding_complete", true)
+					await goto('/chat')
 				} else {
-					// Fallback for unknown errors, such as network or parse errors
-					alert('A network error occurred. Please check your internet connection and try again.');
+					loginFailed = true
 				}
+			} catch (error) {
+				console.log(error)
+				loginFailed = true
 			}
 		}
 	}
@@ -89,11 +75,16 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<div class="flex flex-col justify-start items-start">
-					{#if showLoginFailed}
-						<span class="text-sm text-destructive font-medium">Incorrect email or password</span>
-					{/if}
+				<div class="flex flex-col justify-start items-start space-y-4">
 					<Button href="/forgot-password" variant="link" class="m-0 p-0">Forgot Password?</Button>
+					{#if loginFailed}
+						<Alert.Root variant="destructive">
+							<CircleAlert class="size-4" />
+							<Alert.Title>Authentication Error</Alert.Title>
+							<Alert.Description
+							>Your username or password was incorrect.</Alert.Description>
+						</Alert.Root>
+					{/if}
 				</div>
 				<Form.Button
 					class="w-full mt-6" onclick={handleLogin}>Continue

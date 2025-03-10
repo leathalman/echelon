@@ -132,3 +132,38 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 		return '';
 	}
 }
+
+export async function updateUser(jwt: string, studentId: string, firstName: string, lastName: string, university: string): Promise<{ success: boolean; error?: string }> {
+	try {
+		const response = await fetch('http://localhost:8000/api/users', {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			},
+			body: JSON.stringify({
+				student_id: studentId,
+				first_name: firstName,
+				last_name: lastName,
+				university: university
+			})
+		});
+
+		// Handle non-2xx responses properly
+		if (!response.ok) {
+			const errorData = await response.json(); // assuming the API provides error details
+			return { success: false, error: errorData.message || 'User update failed' };
+		}
+
+		// If successful, return success
+		await response.json();
+		return { success: true };
+	} catch (error) {
+		// Catch any network or unexpected errors
+		console.error('Error:', error);
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'Unknown error occurred'
+		};
+	}
+}

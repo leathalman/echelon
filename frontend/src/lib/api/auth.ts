@@ -1,4 +1,3 @@
-import type { NewUser } from '$lib/state/new-user.svelte';
 
 export async function login(
 	email: string,
@@ -38,36 +37,28 @@ export async function logout() {
 	});
 }
 
-export async function signup(user: NewUser): Promise<{ success: boolean; error?: string }> {
-	console.log(user);
-
+export async function signup(email: string, password: string): Promise<{ success: boolean; error?: string }> {
 	try {
 		const response = await fetch('http://localhost:8000/api/auth/signup', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'include',
 			body: JSON.stringify({
-				email: user.email,
-				password: user.password,
-				student_id: user.student_id,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				university: user.university
+				email,
+				password,
 			})
 		});
 
-		// Handle non-2xx responses properly
+		// Handle non-2xx responses
 		if (!response.ok) {
-			const errorData = await response.json(); // assuming the API provides error details
+			const errorData = await response.json();
 			return { success: false, error: errorData.message || 'Signup failed' };
 		}
 
-		// If successful, return success
+		// If successful, process the response
 		await response.json();
 		return { success: true };
 	} catch (error) {
-		// Catch any network or unexpected errors
 		console.error('Error:', error);
 		return {
 			success: false,

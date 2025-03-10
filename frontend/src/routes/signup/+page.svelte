@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Card from '$lib/components/ui/card';
+	import * as Alert from "$lib/components/ui/alert/index.js";
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './signup_schema';
 	import {
@@ -10,26 +11,36 @@
 	} from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { Button } from '$lib/components/ui/button';
+	import CircleAlert from "lucide-svelte/icons/circle-alert";
+	import { signup } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
-	import { newUserState } from '$lib/state/new-user.svelte.js';
+	import Cookies from 'js-cookie';
 
-	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
+	let { data }: { data: { form: SuperValidated<Infer<FormSchema>>, signUpFailed: boolean } } =
 		$props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema)
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, validateForm} = form;
 
-	function handleSignup() {
-		if (data.form.valid) {
-			newUserState.email = $formData.email;
-			newUserState.password = $formData.password;
-			goto('/onboarding');
+	let signUpFailed = $state(false)
+
+	async function handleSignup() {
+		const formValidation = await validateForm();
+
+		if (formValidation.valid) {
+			const response = await signup($formData.email, $formData.password);
+			if (response.error) {
+				signUpFailed = true
+			} else {
+				signUpFailed = false
+				Cookies.set('onboarding_complete', false)
+				await goto("/onboarding")
+			}
 		}
 	}
-
 </script>
 
 <div class="flex h-full w-full justify-center items-center bg-secondary">
@@ -58,6 +69,14 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
+					{#if signUpFailed}
+						<Alert.Root variant="destructive" class="mt-8">
+							<CircleAlert class="size-4" />
+							<Alert.Title>Authentication Error</Alert.Title>
+							<Alert.Description
+							>Unable to complete sign up. Please try again later.</Alert.Description>
+						</Alert.Root>
+					{/if}
 				<Form.Button class="w-full mt-6" onclick={handleSignup}>
 					Continue
 				</Form.Button>

@@ -56,14 +56,14 @@
     },
     "nullable": [
       false,
+      true,
       false,
       false,
       false,
       false,
-      false,
-      false,
-      false,
-      false
+      true,
+      true,
+      true
     ]
   },
   "hash": "075e169be624d89d92aa4dcb8e79e2c435f4ed60a812c3adcfa84b6666e682e5"

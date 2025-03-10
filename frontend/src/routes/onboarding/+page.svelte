@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { type NewUser, newUserState } from '$lib/state/new-user.svelte';
 	import * as Card from '$lib/components/ui/card/index';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './onboarding_schema';
 	import {
@@ -13,57 +13,45 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { login, signup } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
+	import CircleAlert from 'lucide-svelte/icons/circle-alert';
+	import { onMount } from 'svelte';
+	import { updateUser } from '$lib/api/client';
+	import Cookies from 'js-cookie';
 
-	let { data }: { data: { form: SuperValidated<Infer<FormSchema>> } } =
+	let { data }: { data: { form: SuperValidated<Infer<FormSchema>>, authToken: string | undefined } } =
 		$props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(formSchema)
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, validateForm } = form;
 
-	// TODO: replace alert with something better
+	let signupFailed = $state(false);
+
 	async function handleCompleteOnboarding() {
-		if (data.form.valid) {
+		const formValidation = await validateForm();
+
+		if (formValidation.valid) {
 			try {
-				// Populate new user state (signup payload)
-				newUserState.first_name = $formData.first_name;
-				newUserState.last_name = $formData.last_name;
-				newUserState.university = $formData.university.toLowerCase().replaceAll(' ', '_');
-				newUserState.student_id = $formData.student_id;
+				if (data.authToken) {
+					const signupResult = await updateUser(data.authToken, $formData.student_id, $formData.first_name, $formData.last_name, $formData.university.toLowerCase().replaceAll(' ', '_'));
 
-				// Ensure signup completes successfully
-				const signupResult = await signup(newUserState);
-				if (!signupResult || signupResult.error) {
-					// Handle signup error
-					console.error('Signup failed:', signupResult?.error || 'Unknown error occurred');
-					alert('Signup failed. Please try again.');
-					return; // Exit early if signup fails
+					if (signupResult.error) {
+						signupFailed = true;
+					} else {
+						Cookies.set('onboarding_complete', true)
+						await goto('/chat');
+					}
+
+				} else {
+					signupFailed = true;
 				}
-
-				// Ensure login completes successfully -> TO GET COOKIE
-				const loginResult = await login(newUserState.email, newUserState.password);
-				if (!loginResult || loginResult.error) {
-					// Handle login error
-					console.error('Login failed:', loginResult?.error || 'Unknown error occurred');
-					alert('Login failed. Please try again.');
-					return; // Exit early if login fails
-				}
-
-				// Navigate to the chat page only after successful signup and login
-				await goto('/chat');
 			} catch (error) {
-				// Handle unexpected errors
 				console.error('Unexpected error during onboarding:', error);
-				alert('Something went wrong. Please try again later.');
 			}
 		}
 	}
-
-	$effect(() => {
-		$inspect(newUserState);
-	});
 </script>
 
 <div class="flex h-full w-full justify-center items-center bg-secondary">
@@ -125,6 +113,15 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
+				{#if signupFailed}
+					<Alert.Root variant="destructive" class="mt-6">
+						<CircleAlert class="size-4" />
+						<Alert.Title>Signup Error</Alert.Title>
+						<Alert.Description
+						>Unable to create your account. Please try again later.
+						</Alert.Description>
+					</Alert.Root>
+				{/if}
 				<Form.Button
 					class="w-full mt-6" onclick={handleCompleteOnboarding}>Continue
 				</Form.Button>

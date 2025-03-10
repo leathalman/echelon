@@ -32,14 +32,14 @@ pub enum DBConversationStatus {
 #[derive(Clone)]
 pub struct DBUser {
     pub id: i32,
-    pub student_id: String,
-    pub first_name: String,
-    pub last_name: String,
+    pub student_id: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub email: String,
     pub password_hash: String,
     pub created_at: DateTime<Utc>,
     pub last_login_at: DateTime<Utc>,
-    pub university: String,
+    pub university: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

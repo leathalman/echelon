@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM chat.users WHERE email = $1\n            ",
+  "query": "\n            UPDATE chat.users\n            SET student_id = $2, first_name = $3, last_name = $4, university = $5\n            WHERE id = $1\n            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university\n            ",
   "describe": {
     "columns": [
       {
@@ -25,23 +25,23 @@
       },
       {
         "ordinal": 4,
-        "name": "created_at",
-        "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 5,
-        "name": "last_login_at",
-        "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 6,
         "name": "first_name",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 7,
+        "ordinal": 5,
         "name": "last_name",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_login_at",
+        "type_info": "Timestamptz"
       },
       {
         "ordinal": 8,
@@ -51,7 +51,11 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Int4",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Varchar"
       ]
     },
     "nullable": [
@@ -59,12 +63,12 @@
       true,
       false,
       false,
-      false,
-      false,
       true,
       true,
+      false,
+      false,
       true
     ]
   },
-  "hash": "4ffe225714ed1dacda2034709682930d993291d0b8e75649cb3ef06fc22f5d14"
+  "hash": "21dc934cf58c03de5975541b5508777c288b90c69b11047d826c9448425d64a2"
 }

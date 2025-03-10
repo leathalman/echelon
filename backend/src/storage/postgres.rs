@@ -20,9 +20,27 @@ impl RelationalStorage {
 
     pub async fn create_user(
         &self,
-        student_id: &str,
         email: &str,
         password_hash: &str,
+    ) -> Result<DBUser, sqlx::Error> {
+        sqlx::query_as!(
+            DBUser,
+            r#"
+            INSERT INTO chat.users (email, password_hash)
+            VALUES ($1, $2)
+            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university
+            "#,
+            email,
+            password_hash
+        )
+            .fetch_one(&self.pool)
+            .await
+    }
+
+    pub async fn update_user(
+        &self,
+        id: &i32,
+        student_id: &str,
         first_name: &str,
         last_name: &str,
         university: &str,
@@ -30,13 +48,13 @@ impl RelationalStorage {
         sqlx::query_as!(
             DBUser,
             r#"
-            INSERT INTO chat.users (student_id, email, password_hash, first_name, last_name, university)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            UPDATE chat.users
+            SET student_id = $2, first_name = $3, last_name = $4, university = $5
+            WHERE id = $1
             RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university
             "#,
+            id,
             student_id,
-            email,
-            password_hash,
             first_name,
             last_name,
             university
