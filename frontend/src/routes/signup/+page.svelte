@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './signup_schema';
 	import {
 		type SuperValidated,
@@ -22,11 +22,12 @@
 
 	const { form: formData, enhance } = form;
 
-	// TODO: dont allow this unless both fields are correctly filled out
 	function handleSignup() {
-		newUserState.email = $formData.email;
-		newUserState.password = $formData.password;
-		goto('/onboarding');
+		if (data.form.valid) {
+			newUserState.email = $formData.email;
+			newUserState.password = $formData.password;
+			goto('/onboarding');
+		}
 	}
 
 </script>

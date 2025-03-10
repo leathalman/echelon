@@ -26,37 +26,38 @@
 
 	const { form: formData, enhance, errors } = form;
 
-	// TODO: dont allow this unless both fields are correctly filled out
 	// TODO: replace alert with something better
 	async function handleLogin() {
-		try {
-			showLoginFailed = false;
+		if (data.form.valid) {
+			try {
+				showLoginFailed = false;
 
-			// Attempt the login API call
-			await login($formData.email, $formData.password);
+				// Attempt the login API call
+				await login($formData.email, $formData.password);
 
-			// Redirect user upon successful login
-			await goto('/chat');
-		} catch (error: unknown) {
-			// Log the error for debugging purposes
-			console.error(error);
+				// Redirect user upon successful login
+				await goto('/chat');
+			} catch (error: unknown) {
+				// Log the error for debugging purposes
+				console.error(error);
 
-			// Handle different error scenarios
-			if (error instanceof Response) {
-				// Handle HTTP errors returned by the `login` API
-				if (error.status === 401) {
-					// Unauthorized: Incorrect email or password
-					showLoginFailed = true;
-				} else if (error.status >= 500) {
-					// Server-side error
-					alert('An error occurred on the server. Please try again later.');
+				// Handle different error scenarios
+				if (error instanceof Response) {
+					// Handle HTTP errors returned by the `login` API
+					if (error.status === 401) {
+						// Unauthorized: Incorrect email or password
+						showLoginFailed = true;
+					} else if (error.status >= 500) {
+						// Server-side error
+						alert('An error occurred on the server. Please try again later.');
+					} else {
+						// Other HTTP response scenarios
+						alert('An unexpected error occurred. Please try again.');
+					}
 				} else {
-					// Other HTTP response scenarios
-					alert('An unexpected error occurred. Please try again.');
+					// Fallback for unknown errors, such as network or parse errors
+					alert('A network error occurred. Please check your internet connection and try again.');
 				}
-			} else {
-				// Fallback for unknown errors, such as network or parse errors
-				alert('A network error occurred. Please check your internet connection and try again.');
 			}
 		}
 	}

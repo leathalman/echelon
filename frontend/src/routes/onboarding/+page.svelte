@@ -23,40 +23,41 @@
 
 	const { form: formData, enhance } = form;
 
-	// TODO: dont allow this unless all fields are correctly filled out
-	// TODO: remove alerts for something better
+	// TODO: replace alert with something better
 	async function handleCompleteOnboarding() {
-		try {
-			// Populate new user state (signup payload)
-			newUserState.first_name = $formData.first_name;
-			newUserState.last_name = $formData.last_name;
-			newUserState.university = $formData.university.toLowerCase().replaceAll(' ', '_');
-			newUserState.student_id = $formData.student_id;
+		if (data.form.valid) {
+			try {
+				// Populate new user state (signup payload)
+				newUserState.first_name = $formData.first_name;
+				newUserState.last_name = $formData.last_name;
+				newUserState.university = $formData.university.toLowerCase().replaceAll(' ', '_');
+				newUserState.student_id = $formData.student_id;
 
-			// Ensure signup completes successfully
-			const signupResult = await signup(newUserState);
-			if (!signupResult || signupResult.error) {
-				// Handle signup error
-				console.error('Signup failed:', signupResult?.error || 'Unknown error occurred');
-				alert('Signup failed. Please try again.');
-				return; // Exit early if signup fails
+				// Ensure signup completes successfully
+				const signupResult = await signup(newUserState);
+				if (!signupResult || signupResult.error) {
+					// Handle signup error
+					console.error('Signup failed:', signupResult?.error || 'Unknown error occurred');
+					alert('Signup failed. Please try again.');
+					return; // Exit early if signup fails
+				}
+
+				// Ensure login completes successfully -> TO GET COOKIE
+				const loginResult = await login(newUserState.email, newUserState.password);
+				if (!loginResult || loginResult.error) {
+					// Handle login error
+					console.error('Login failed:', loginResult?.error || 'Unknown error occurred');
+					alert('Login failed. Please try again.');
+					return; // Exit early if login fails
+				}
+
+				// Navigate to the chat page only after successful signup and login
+				await goto('/chat');
+			} catch (error) {
+				// Handle unexpected errors
+				console.error('Unexpected error during onboarding:', error);
+				alert('Something went wrong. Please try again later.');
 			}
-
-			// Ensure login completes successfully -> TO GET COOKIE
-			const loginResult = await login(newUserState.email, newUserState.password);
-			if (!loginResult || loginResult.error) {
-				// Handle login error
-				console.error('Login failed:', loginResult?.error || 'Unknown error occurred');
-				alert('Login failed. Please try again.');
-				return; // Exit early if login fails
-			}
-
-			// Navigate to the chat page only after successful signup and login
-			await goto('/chat');
-		} catch (error) {
-			// Handle unexpected errors
-			console.error('Unexpected error during onboarding:', error);
-			alert('Something went wrong. Please try again later.');
 		}
 	}
 
