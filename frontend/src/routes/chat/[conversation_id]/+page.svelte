@@ -62,7 +62,7 @@
 <div class="flex flex-col items-center pt-24">
 	<div bind:clientWidth={markdownWidth} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
 			 style="margin-bottom: {textAreaHeight + 80}px">
-		{#each data.messages as message}
+		{#each messages.value as message}
 			{#if message.role === 'User'}
 				<div class="flex w-full justify-end">
 					<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
