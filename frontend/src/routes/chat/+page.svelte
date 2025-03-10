@@ -12,6 +12,8 @@
 	let { data } = $props();
 
 	async function handleSubmitQuery() {
+		if (!query.trim()) return; // Don't submit empty queries
+
 		const conversationId = await createConversation(data.authToken);
 
 		conversations.value.unshift({
@@ -49,6 +51,17 @@
 
 		await goto(`/chat/${conversationId}`);
 	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			if (!event.shiftKey) {
+				// Enter without shift - submit
+				event.preventDefault(); // Prevent default newline
+				handleSubmitQuery();
+			}
+			// With shift - let the default behavior (newline) happen
+		}
+	}
 </script>
 
 <div class="flex flex-col basis-[75%] justify-center items-center space-y-5">
@@ -58,14 +71,16 @@
 	</div>
 	<div
 		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
-					border border-border focus-within:outline
-					focus-within:outline-ring focus-within:outline-2
-					focus-within:outline-offset-2 bg-background
-					shadow-lg
-		">
-		<TextareaPlain bind:value={query}
-									 class="text-lg font-semibold mx-1 px-2 my-2"
-									 placeholder="How can I help?"></TextareaPlain>
+      border border-border focus-within:outline
+      focus-within:outline-ring focus-within:outline-2
+      focus-within:outline-offset-2 bg-background
+      shadow-lg
+    ">
+		<TextareaPlain
+			bind:value={query}
+			onkeydown={handleKeydown}
+			class="text-lg font-semibold mx-1 px-2 my-2"
+			placeholder="How can I help? (Press Enter to send, Shift+Enter for new line)"></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
 			<Button class="w-9 h-9 rounded-full" onclick={handleSubmitQuery}>
 				<ArrowRight />

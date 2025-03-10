@@ -24,6 +24,8 @@
 	});
 
 	async function handleSubmitQuery() {
+		if (!query.trim()) return; // Don't submit empty queries
+
 		newMessage.completionPending = true
 
 		try {
@@ -57,6 +59,17 @@
 			newMessage.completionPending = false
 		}
 	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			if (!event.shiftKey) {
+				// Enter without shift - submit
+				event.preventDefault(); // Prevent default newline
+				handleSubmitQuery();
+			}
+			// With shift - let the default behavior (newline) happen
+		}
+	}
 </script>
 
 <div class="flex flex-col items-center pt-24">
@@ -83,6 +96,7 @@
 				<TextareaPlain
 					bind:height={textAreaHeight}
 					bind:value={query}
+					onkeydown={handleKeydown}
 					class="w-full font-medium"
 					placeholder="What else would you like to know?" />
 			</div>
