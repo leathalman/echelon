@@ -1,8 +1,9 @@
 import type { Message } from '$lib/model/messages.svelte';
+import { API_CONFIG } from './config';
 
 export async function fetchUser(jwt: string) {
 	try {
-		const response = await fetch(`http://localhost:8000/api/users`, {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -20,7 +21,7 @@ export async function fetchUser(jwt: string) {
 export async function fetchMessages(jwt: string, conversationId: number) {
 	try {
 		const response = await fetch(
-			`http://localhost:8000/api/conversations/${conversationId}/messages`,
+			`${API_CONFIG.BASE_URL}/conversations/${conversationId}/messages`,
 			{
 				method: 'GET',
 				headers: {
@@ -40,7 +41,7 @@ export async function fetchMessages(jwt: string, conversationId: number) {
 // only returns active conversationsSvelte
 export async function fetchConversations(jwt: string) {
 	try {
-		const response = await fetch('http://localhost:8000/api/conversations', {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/conversations`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export async function fetchConversations(jwt: string) {
 
 export async function createConversation(jwt: string) {
 	try {
-		const response = await fetch('http://localhost:8000/api/conversations', {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/conversations`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ export async function createMessage(
 ) {
 	try {
 		const response = await fetch(
-			`http://localhost:8000/api/conversations/${conversationId}/messages`,
+			`${API_CONFIG.BASE_URL}/conversations/${conversationId}/messages`,
 			{
 				method: 'POST',
 				headers: {
@@ -113,7 +114,7 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 			role: message.role
 		}));
 
-		const response = await fetch(`http://localhost:8000/api/completions`, {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/completions`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -135,7 +136,7 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 
 export async function updateUser(jwt: string, studentId: string, firstName: string, lastName: string, university: string): Promise<{ success: boolean; error?: string }> {
 	try {
-		const response = await fetch('http://localhost:8000/api/users', {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',

@@ -1,10 +1,11 @@
+import { API_CONFIG } from './config';
 
 export async function login(
 	email: string,
 	password: string
 ): Promise<{ success: boolean; error?: string }> {
 	try {
-		const response = await fetch('http://localhost:8000/api/auth/login', {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ email, password }),
@@ -31,21 +32,24 @@ export async function login(
 }
 
 export async function logout() {
-	await fetch('http://localhost:8000/api/auth/logout', {
+	await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
 		method: 'GET',
 		credentials: 'include'
 	});
 }
 
-export async function signup(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function signup(
+	email: string,
+	password: string
+): Promise<{ success: boolean; error?: string }> {
 	try {
-		const response = await fetch('http://localhost:8000/api/auth/signup', {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/auth/signup`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
 			body: JSON.stringify({
 				email,
-				password,
+				password
 			})
 		});
 
