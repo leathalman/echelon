@@ -2,35 +2,26 @@ openapi: 3.1.0
 info:
   title: Echelon API
   version: 1.0.0
-  description: Retrieval Augmented Generation for Undergraduate Academic Advising.
+  description: AI-powered academic advising and university knowledge retrieval system for TCU students and faculty
 servers:
-  - url: https://echelon.com/api
-    description: Location of API endpoint for requests
+  - url: http://localhost:8000/api
+    description: Local development server
+  - url: https://echelongpt/api
+    description: Cloud production server
 security:
-  - bearerAuth: [ ]
+  - BearerAuth: [ ]
 paths:
-  /conversations:
+  /health:
     get:
-      operationId: getConversations
+      operationId: healthCheck
       tags:
-        - conversations
-      summary: Get conversations
+        - system
+      summary: Check API health status
+      description: Endpoint to verify the API is running properly
+      security: [ ]
       responses:
         "200":
-          description: The request was successful, and the server has returned the
-            requested resource in the response body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "401":
-          description: Authentication is required to access the requested resource. The
-            client must include the appropriate credentials.
+          description: API is running
           content:
             application/json:
               schema:
@@ -38,320 +29,556 @@ paths:
                 properties:
                   message:
                     type: string
-                required:
-                  - message
+                    example: "Echelon is running :)"
+
+  /auth/signup:
+    post:
+      operationId: signUp
+      tags:
+        - auth
+      summary: Create a new user account
+      description: Register a new user with email and password
+      security: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: string
+                    description: JWT authentication token
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      operationId: login
+      tags:
+        - auth
+      summary: Log in to an existing account
+      description: Authenticate with email and password
+      security: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: string
+                    description: JWT authentication token
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    get:
+      operationId: logout
+      tags:
+        - auth
+      summary: Log out the current user
+      description: Invalidate the current authentication token
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /users:
+    get:
+      operationId: getCurrentUser
+      tags:
+        - users
+      summary: Get current user details
+      description: Retrieve details of the authenticated user
+      responses:
+        "200":
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
         "404":
-          $ref: "#/components/responses/NotFound"
-      security:
-        - BearerJwt: [ ]
-      parameters: [ ]
-      description: JWT gives user information which is used for conversation look up.
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      operationId: updateCurrentUser
+      tags:
+        - users
+      summary: Update user information
+      description: Update the authenticated user's profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        "201":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully updated user"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
+  /conversations:
+    get:
+      operationId: listConversations
+      tags:
+        - conversations
+      summary: List all conversations
+      description: Retrieve all conversations for the authenticated user
+      responses:
+        "200":
+          description: Conversations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
     post:
       operationId: createConversation
       tags:
         - conversations
-      summary: Create conversation
-      responses:
-        "201":
-          description: The request was successful, and a new resource was created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          description: Authentication is required to access the requested resource. The
-            client must include the appropriate credentials.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-      security:
-        - BearerJwt: [ ]
+      summary: Create a new conversation
+      description: Start a new conversation thread
       requestBody:
         required: true
-        description: ""
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-              required:
-                - title
-      parameters: [ ]
-      description: Must provide title; user_id from JWT
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        "201":
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: integer
+                    format: int32
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
   /conversations/{conversation_id}/messages:
+    parameters:
+      - $ref: '#/components/parameters/ConversationIdParam'
+
     get:
-      operationId: getMessages
+      operationId: listMessages
       tags:
         - conversations
-      summary: Get messages
-      parameters:
-        - $ref: "#/components/parameters/conversation_id"
+      summary: List messages in a conversation
+      description: Retrieve all messages for a specific conversation
       responses:
         "200":
-          description: The request was successful, and the server has returned the
-            requested resource in the response body.
+          description: Messages retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "400":
-          $ref: "#/components/responses/BadRequest"
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
         "401":
-          description: Authentication is required to access the requested resource. The
-            client must include the appropriate credentials.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: '#/components/responses/Unauthorized'
         "404":
-          $ref: "#/components/responses/NotFound"
-      security:
-        - BearerJwt: [ ]
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
     post:
       operationId: createMessage
       tags:
         - conversations
-      summary: Create message
-      parameters:
-        - $ref: "#/components/parameters/conversation_id"
+      summary: Add a message to a conversation
+      description: Add a new message to an existing conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
       responses:
         "201":
-          description: The request was successful, and a new resource was created.
+          description: Message created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "400":
-          $ref: "#/components/responses/BadRequest"
+                  conversation_id:
+                    type: integer
+                    format: int32
         "401":
-          description: Authentication is required to access the requested resource. The
-            client must include the appropriate credentials.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-        "409":
-          $ref: "#/components/responses/Conflict"
-      requestBody:
-        required: true
-        description: ""
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                content:
-                  type: string
-                role:
-                  type: string
-              required:
-                - content
-                - role
-  /auth/signup:
-    post:
-      operationId: signUpUser
-      tags:
-        - auth
-      summary: Sign up user
-      responses:
-        "201":
-          description: The request was successful, and a new resource was created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "409":
-          $ref: "#/components/responses/Conflict"
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
         "500":
-          $ref: "#/components/responses/InternalServerErrror"
+          $ref: '#/components/responses/InternalServerError'
+
+  /completions:
+    post:
+      operationId: createCompletion
+      tags:
+        - completions
+      summary: Generate a completion response
+      description: Use LLM to generate a response based on message history and vector search
       requestBody:
         required: true
-        description: ""
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password_hash:
-                  type: string
-              required:
-                - email
-                - password_hash
-  /auth/login:
-    post:
-      operationId: loginUser
-      tags:
-        - auth
-      summary: Login user
+              $ref: '#/components/schemas/CreateCompletionRequest'
       responses:
         "200":
-          description: The request was successful, and the server has returned the
-            requested resource in the response body.
+          description: Completion generated successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: object
-                required:
-                  - data
-        "404":
-          description: The server cannot find the requested resource. The endpoint may be
-            invalid or the resource may no longer exist.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
+                  content:
                     type: string
-                required:
-                  - message
-      parameters: [ ]
-      requestBody:
-        required: true
-        description: ""
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password_hash:
-                  type: string
-              required:
-                - email
-                - password_hash
+                    description: Generated completion text
+                  generation_time:
+                    type: integer
+                    description: Time taken to generate the completion in milliseconds
+                  token_count:
+                    type: integer
+                    description: Number of tokens in the generated completion
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
 components:
   schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address (must end with @tcu.edu)
+          example: "student@tcu.edu"
+        password:
+          type: string
+          format: password
+          description: User's password
+          example: "Password123"
+
+    LoginUserRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "student@tcu.edu"
+        password:
+          type: string
+          format: password
+          description: User's password
+          example: "Password123"
+
+    UpdateUserRequest:
+      type: object
+      required:
+        - student_id
+        - first_name
+        - last_name
+        - university
+      properties:
+        student_id:
+          type: string
+          description: University student ID
+          example: "12345678"
+        first_name:
+          type: string
+          description: User's first name
+          example: "John"
+        last_name:
+          type: string
+          description: User's last name
+          example: "Smith"
+        university:
+          type: string
+          description: User's university
+          example: "texas_christian_university"
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique user identifier
+        student_id:
+          type: string
+          description: University student ID
+        first_name:
+          type: string
+          description: User's first name
+        last_name:
+          type: string
+          description: User's last name
+        email:
+          type: string
+          format: email
+          description: User's email address
+        university:
+          type: string
+          description: User's university
+
+    CreateConversationRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Title of the conversation
+          example: "Course Registration Questions"
+
     Conversation:
       type: object
       properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique conversation identifier
         owner_id:
           type: integer
+          format: int32
+          description: ID of the user who owns the conversation
         title:
           type: string
+          description: Title of the conversation
+        last_message_at:
+          type: string
+          format: date-time
+          description: Timestamp of the last message in the conversation
         status:
           type: string
+          enum: [ Active, Archived, Starred, System ]
+          description: Current status of the conversation
+
+    CreateMessageRequest:
+      type: object
       required:
-        - owner_id
-        - title
-        - status
-      description: Owned by a single user, comprised of zero or more messages
-  responses:
-    Conflict:
-      content:
-        application/json:
-          schema:
+        - content
+        - role
+      properties:
+        content:
+          type: string
+          description: Content of the message
+          example: "How do I register for Computer Science classes?"
+        role:
+          type: string
+          enum: [ User, Assistant ]
+          description: Role of the message sender
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique message identifier
+        conversation_id:
+          type: integer
+          format: int32
+          description: ID of the conversation the message belongs to
+        content:
+          type: string
+          description: Content of the message
+        role:
+          type: string
+          enum: [ User, Assistant ]
+          description: Role of the message sender
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the message was created
+
+    CreateCompletionRequest:
+      type: object
+      required:
+        - messages
+        - collection
+      properties:
+        messages:
+          type: array
+          description: Array of messages for context
+          items:
             type: object
             required:
-              - message
+              - role
+              - content
             properties:
-              message:
+              role:
                 type: string
-                examples:
-                  - Lorem ipsum
-      description: The request could not be completed due to a conflict with the
-        current state of the resource. Resolve the conflict and try again.
-    NotFound:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - message
-            properties:
-              message:
+                enum: [ User, Assistant ]
+                description: Role of the message sender
+              content:
                 type: string
-                examples:
-                  - Lorem ipsum
-      description: The server cannot find the requested resource. The endpoint may be
-        invalid or the resource may no longer exist.
-    BadRequest:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - message
-            properties:
-              message:
-                type: string
-                examples:
-                  - Lorem ipsum
-      description: The server could not understand the request due to invalid syntax.
-        The client should modify the request and try again.
-    InternalServerErrror:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - message
-            properties:
-              message:
-                type: string
-                examples:
-                  - Lorem ipsum
-      description: The server encountered an unexpected condition that prevented it
-        from fulfilling the request. Report the issue to the support team if it
-        persists.
+                description: Content of the message
+        collection:
+          type: string
+          description: Vector database collection to search against
+          example: "tcu_docs"
+
   parameters:
-    conversation_id:
+    ConversationIdParam:
       name: conversation_id
       in: path
       required: true
       schema:
-        type: string
+        type: integer
+        format: int32
+      description: ID of the conversation
+
+  responses:
+    BadRequest:
+      description: The request was invalid or cannot be served
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid request parameters"
+
+    Unauthorized:
+      description: Authentication is required or has failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid or expired JWT"
+
+    Forbidden:
+      description: The server understood the request but refuses to authorize it
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "You do not have permission to access this resource"
+
+    NotFound:
+      description: The requested resource could not be found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Resource not found"
+
+    Conflict:
+      description: The request could not be completed due to a conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User already exists with email"
+
+    InternalServerError:
+      description: An unexpected error occurred on the server
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "An internal server error occurred"
+
   securitySchemes:
-    BearerJwt:
+    BearerAuth:
       type: http
-      bearerFormat: Json Web Token (JWT)
-      scheme: Bearer
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or signup
+
 tags:
-  - name: conversations
   - name: auth
+    description: Authentication operations
+  - name: users
+    description: User management operations
+  - name: conversations
+    description: Conversation management operations
+  - name: completions
+    description: LLM completion operations
+  - name: system
+    description: System-level operations
