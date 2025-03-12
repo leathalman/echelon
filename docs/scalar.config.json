@@ -3,7 +3,7 @@
   "customDomain": "docs.echelongpt.com",
   "guides": [
     {
-      "name": "My awesome documentation",
+      "name": "Documentation",
       "sidebar": [
         {
           "path": "docs/introduction.md",
