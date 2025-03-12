@@ -1,0 +1,11 @@
+# Rust
+target/
+Cargo.lock
+.fastembed_cache
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Other
+data
