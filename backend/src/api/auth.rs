@@ -31,11 +31,13 @@ pub struct LoginUserSchema {
 fn create_auth_response(
     user_id: i32,
     jwt_secret: &[u8],
+    jwt_expired_in: i64,
+    jwt_max_age: i64,
 ) -> Result<Response<String>, (StatusCode, Json<serde_json::Value>)> {
     let now = chrono::Utc::now();
     let issued_at = now.timestamp() as usize;
-    // TODO: increase to 1 week for prod
-    let expire_at = (now + chrono::Duration::days(1)).timestamp() as usize;
+    let expire_at = (now + chrono::Duration::days(jwt_expired_in)).timestamp() as usize;
+
     let claims: TokenClaims = TokenClaims {
         sub: user_id.to_string(),
         iat: issued_at,
@@ -59,7 +61,7 @@ fn create_auth_response(
 
     let cookie = Cookie::build(("auth_token", token.to_owned()))
         .path("/")
-        .max_age(time::Duration::hours(24))
+        .max_age(time::Duration::days(jwt_max_age))
         .same_site(SameSite::Lax)
         .http_only(true);
 
@@ -134,7 +136,8 @@ pub async fn auth_signup_handler(
     {
         Ok(user) => {
             // Generate JWT and create auth response
-            create_auth_response(user.id, state.config.jwt_secret.as_ref())
+            create_auth_response(user.id, state.config.jwt_secret.as_ref(),
+                                 state.config.jwt_expired_in, state.config.jwt_max_age)
         }
         Err(e) => {
             // SQL error, failed to execute SQL SELECT
@@ -203,7 +206,8 @@ pub async fn auth_login_handler(
     }
 
     // Generate JWT and create auth response
-    create_auth_response(user.id, state.config.jwt_secret.as_ref())
+    create_auth_response(user.id, state.config.jwt_secret.as_ref(),
+                         state.config.jwt_expired_in, state.config.jwt_max_age)
 }
 
 // GET /api/auth/logout

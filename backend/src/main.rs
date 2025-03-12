@@ -4,19 +4,19 @@ use axum::http::{
 };
 use backend::api::router::create_router;
 use backend::app_state::AppState;
-use backend::config::Config;
+use backend::config::{Config, Environment};
 use backend::llm::inference;
-use backend::llm::model::Model::Llama3_11b;
+use backend::llm::model::Model::{Mistral};
 use backend::storage::postgres::RelationalStorage;
 use backend::storage::qdrant::QdrantAdapter;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-use tracing::info;
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
+    let config = Config::init();
 
     tracing_subscriber::registry()
         .with(EnvFilter::new(
@@ -25,7 +25,7 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let config = Config::init();
+    info!("Environment: {}", config.environment);
 
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
@@ -35,15 +35,29 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(&config.deployment_url).await.unwrap();
 
+    let qdrant_api_key = config.qdrant_api_key.clone();
+    let vector_storage = match config.environment {
+        Environment::Development => QdrantAdapter::new(&config.qdrant_url).unwrap(),
+        Environment::Production => {
+            let key = qdrant_api_key.unwrap_or_else(|e| {
+                error!("No QDRANT_API_KEY set in .env, and environment is set to 'production: {}'", e);
+                panic!();
+            });
+
+            QdrantAdapter::new_with_api_key(&config.qdrant_url, &key).unwrap()
+        }
+    };
+
     let app = create_router(Arc::new(AppState {
         relational_storage: RelationalStorage::new(&config.postgres_url)
             .await
             .unwrap(),
-        vector_storage: QdrantAdapter::new(&config.qdrant_url).unwrap(),
-        llm: inference::build(Llama3_11b),
+        vector_storage,
+        llm: inference::build(Mistral),
         config,
     }))
         .layer(cors);
+
 
     info!("Axum is up.");
 

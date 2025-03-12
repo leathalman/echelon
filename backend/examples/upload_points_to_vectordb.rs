@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     dotenv::dotenv().ok();
     let config = Config::init();
 
-    let db_collection = "course_catalog";
+    let db_collection = "texas_christian_university";
 
     let vectordb = vector::build(VectorStorageBackend::Qdrant, &config.qdrant_url).unwrap();
 

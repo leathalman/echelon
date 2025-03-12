@@ -20,7 +20,17 @@ pub struct QdrantAdapter {
 
 impl QdrantAdapter {
     pub fn new(qdrant_url: &str) -> Result<QdrantAdapter, VectorStorageError> {
-        match Qdrant::from_url(qdrant_url).build() {
+        match Qdrant::from_url(qdrant_url).api_key("-").build() {
+            Ok(client) => Ok(Self { client }),
+            Err(err) => Err(VectorStorageError::Message(format!(
+                "Could not create instance of Qdrant client: {}",
+                err.to_string()
+            ))),
+        }
+    }
+    
+    pub fn new_with_api_key(qdrant_url: &str, api_key: &str) -> Result<QdrantAdapter, VectorStorageError> {
+        match Qdrant::from_url(qdrant_url).api_key(api_key).build() {
             Ok(client) => Ok(Self { client }),
             Err(err) => Err(VectorStorageError::Message(format!(
                 "Could not create instance of Qdrant client: {}",
