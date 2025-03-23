@@ -17,7 +17,7 @@
         Foreground -> Text Color
         Background -> BG Color
         */
-        --background: 0 0% 100%;
+        --background: 0 0% 98%;
         --foreground: 224 71.4% 4.1%;
 
         --card: 0 0% 100%;
@@ -44,7 +44,7 @@
         --destructive: 0 72.22% 50.59%;
         --destructive-foreground: 210 20% 98%;
 
-        --border: 220 13% 91%;
+        --border: 0 0% 92%;
 
         /* Border color for inputs lke Textarea */
         --input: 220 13% 91%;

@@ -6,7 +6,7 @@ use backend::api::router::create_router;
 use backend::app_state::AppState;
 use backend::config::{Config, Environment};
 use backend::llm::inference;
-use backend::llm::model::Model::{Mistral};
+use backend::llm::model::Model::{Gemma3_12b};
 use backend::storage::postgres::RelationalStorage;
 use backend::storage::qdrant::QdrantAdapter;
 use std::sync::Arc;
@@ -53,7 +53,7 @@ async fn main() {
             .await
             .unwrap(),
         vector_storage,
-        llm: inference::build(Mistral),
+        llm: inference::build(Gemma3_12b),
         config,
     }))
         .layer(cors);

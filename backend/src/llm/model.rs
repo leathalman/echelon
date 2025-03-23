@@ -14,4 +14,6 @@ pub enum Model {
     BespokeMinicheck,
     #[strum(serialize = "mistral")]
     Mistral,
+    #[strum(serialize = "gemma3:12b")]
+    Gemma3_12b,
 }

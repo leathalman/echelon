@@ -25,24 +25,6 @@
 
 	let { data } = $props();
 
-	const items = [
-		{
-			title: 'Special Chat 1'
-			// url: '/maintenance',
-			// icon: BookText
-		},
-		{
-			title: 'Special Chat 2'
-			// url: '/maintenance',
-			// icon: UserRound
-		},
-		{
-			title: 'Special Chat 3'
-			// url: '/maintenance',
-			// icon: Settings
-		}
-	];
-
 	function handleNewChat() {
 		goto('/chat');
 	}
@@ -68,20 +50,6 @@
 		</div>
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<Sidebar.Group>
-			<Sidebar.GroupLabel>Starred</Sidebar.GroupLabel>
-			<Sidebar.GroupContent>
-				<Sidebar.Menu>
-					{#each items as item (item.title)}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
-								<span class="text-sm">{item.title}</span>
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
-					{/each}
-				</Sidebar.Menu>
-			</Sidebar.GroupContent>
-		</Sidebar.Group>
 		<Sidebar.Group>
 			<Sidebar.GroupLabel>Chat History</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>

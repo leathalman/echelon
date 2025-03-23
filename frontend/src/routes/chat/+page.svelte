@@ -1,7 +1,7 @@
 <script lang="ts">
 	import TextareaPlain from '../../lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 	import { goto } from '$app/navigation';
 	import { type Message, messages } from '$lib/model/messages.svelte';
 	import { conversations } from '$lib/model/conversations.svelte';
@@ -64,26 +64,25 @@
 	}
 </script>
 
-<div class="flex flex-col basis-[75%] justify-center items-center space-y-5">
-	<div class="w-[90%] md:max-w-156 items-start flex flex-col space-y-4">
-		<img alt="Temp Icon" height="25" src="/temp_logo.svg" width="25" />
-		<span class="text-lg">Hi, {data.user.first_name}</span>
+<div class="flex flex-col basis-[75%] justify-center items-center space-y-5 mt-10">
+	<div class="w-[90%] max-w-[46rem] items-center flex flex-col mb-5">
+		<span class="text-3xl font-semibold">Hello, {data.user.first_name}.</span>
 	</div>
 	<div
-		class="w-[90%] md:max-w-156 flex flex-col rounded-lg
-      border border-border focus-within:outline
+		class="w-[90%] md:max-w-[46rem] flex flex-col rounded-xl
+      border-[0.5px] border-border focus-within:outline
       focus-within:outline-ring focus-within:outline-2
       focus-within:outline-offset-2 bg-background
-      shadow-lg
+      shadow-md shadow-gray-300
     ">
 		<TextareaPlain
 			bind:value={query}
 			onkeydown={handleKeydown}
-			class="text-lg font-semibold mx-1 px-2 my-2"
-			placeholder="How can I help? (Press Enter to send, Shift+Enter for new line)"></TextareaPlain>
+			class="text-md mt-4 ml-5"
+			placeholder="Ask Echelon (Press Enter to send, Shift+Enter for new line)"></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
-			<Button class="w-9 h-9 rounded-full" onclick={handleSubmitQuery}>
-				<ArrowRight />
+			<Button class="w-9 h-9 rounded-xl" onclick={handleSubmitQuery}>
+				<ArrowUp />
 			</Button>
 		</div>
 	</div>
