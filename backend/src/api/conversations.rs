@@ -20,6 +20,12 @@ pub struct CreateConversationSchema {
     pub title: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateConversationSchema {
+    pub id: i32,
+    pub title: String,
+}
+
 /// GET /api/conversation/
 /// Authorized Endpoint -> JWT Required
 /// // TODO: generalize error message return (look at auth for this)
@@ -171,4 +177,31 @@ pub async fn conversation_new_message_handler(
     }
 }
 
-// TODO: how are we going to trigger LLAMA?? Do I need to put it in AppState, or something else?
+pub async fn conversation_update_handler(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<UpdateConversationSchema>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    match state
+        .relational_storage
+        .update_conversation(
+            &payload.id,
+            &payload.title,
+        )
+        .await
+    {
+        Err(e) => {
+            // SQL error, failed to execute SQL
+            error!("Failed on SQL fetch: {}", e.to_string());
+            let error_response = json!({
+                "message": "Unable to update conversation due to a server error",
+            });
+            Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)))
+        }
+        Ok(_) => {
+            let json_response = json!({
+                "message": "Successfully updated conversation"
+            });
+            Ok((StatusCode::CREATED, Json(json_response)))
+        }
+    }
+}

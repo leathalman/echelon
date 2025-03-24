@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{middleware, routing::get, routing::post, Router};
 use crate::api::completions::{completion_new_handler, completion_new_title_handler};
-use crate::api::conversations::{conversation_list_handler, conversation_list_messages, conversation_new_handler, conversation_new_message_handler};
+use crate::api::conversations::{conversation_list_handler, conversation_list_messages, conversation_new_handler, conversation_new_message_handler, conversation_update_handler};
 use crate::api::health::health_checker_handler;
 use crate::app_state::AppState;
 use tower_http::trace::{self, TraceLayer};
@@ -24,7 +24,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
 
     // Protected routes that require authentication
     let protected_routes = Router::new()
-        .route("/conversations", get(conversation_list_handler).post(conversation_new_handler))
+        .route("/conversations", get(conversation_list_handler).post(conversation_new_handler).put(conversation_update_handler))
         .route(
             "/conversations/:conversation_id/messages",
             get(conversation_list_messages).post(conversation_new_message_handler),

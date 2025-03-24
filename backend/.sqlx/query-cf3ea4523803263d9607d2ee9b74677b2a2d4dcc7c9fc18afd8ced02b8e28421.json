@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE chat.conversations\n        SET title = $2\n        WHERE id = $1\n        RETURNING id, owner_id, title, last_message_at, status as \"status!: DBConversationStatus\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "owner_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_message_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "status!: DBConversationStatus",
+        "type_info": {
+          "Custom": {
+            "name": "chat.conversation_status",
+            "kind": {
+              "Enum": [
+                "active",
+                "archived",
+                "starred",
+                "system"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "cf3ea4523803263d9607d2ee9b74677b2a2d4dcc7c9fc18afd8ced02b8e28421"
+}

@@ -106,6 +106,26 @@ impl RelationalStorage {
             .await
     }
 
+    pub async fn update_conversation(
+        &self,
+        conversation_id: &i32,
+        title: &str,
+    ) -> Result<DBConversation, sqlx::Error> {
+        sqlx::query_as!(
+            DBConversation,
+            r#"
+            UPDATE chat.conversations
+            SET title = $2
+            WHERE id = $1
+            RETURNING id, owner_id, title, last_message_at, status as "status!: DBConversationStatus"
+            "#,
+            conversation_id,
+            title
+        )
+            .fetch_one(&self.pool)
+            .await
+    }
+
     pub async fn get_user_conversations(
         &self,
         user_id: i32,
