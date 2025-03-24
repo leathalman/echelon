@@ -7,6 +7,7 @@ use ollama_rs::generation::completion::GenerationResponse;
 use ollama_rs::generation::options::GenerationOptions;
 use ollama_rs::Ollama;
 use std::default::Default;
+use crate::llm::prompt::Instruction;
 
 pub struct OllamaAdapter {
     client: Ollama,
@@ -44,7 +45,12 @@ impl OllamaAdapter {
 
 impl InferenceRequest {
     fn to_generation_request(self, model: &Model) -> GenerationRequest {
-        GenerationRequest::new(model.to_string(), self.prompt.to_string())
+        let prompt = match self.prompt.instruction {
+            Instruction::RAG => self.prompt.to_string_rag(),
+            Instruction::Title => self.prompt.to_string_title()
+        };
+
+        GenerationRequest::new(model.to_string(), prompt)
     }
 }
 

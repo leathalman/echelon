@@ -134,6 +134,32 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 	}
 }
 
+export async function createTitle(jwt: string, messages: Message[]) {
+	try {
+		const formattedMessages = messages.map((message) => ({
+			content: message.content,
+			role: message.role
+		}));
+
+		const response = await fetch(`${API_CONFIG.BASE_URL}/completions/title`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			},
+			body: JSON.stringify({
+				messages: formattedMessages,
+			})
+		});
+
+		const data = await response.json();
+		return data.content;
+	} catch (error) {
+		console.error('Error:', error);
+		return '';
+	}
+}
+
 export async function updateUser(jwt: string, studentId: string, firstName: string, lastName: string, university: string): Promise<{ success: boolean; error?: string }> {
 	try {
 		const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
@@ -154,6 +180,39 @@ export async function updateUser(jwt: string, studentId: string, firstName: stri
 		if (!response.ok) {
 			const errorData = await response.json(); // assuming the API provides error details
 			return { success: false, error: errorData.message || 'User update failed' };
+		}
+
+		// If successful, return success
+		await response.json();
+		return { success: true };
+	} catch (error) {
+		// Catch any network or unexpected errors
+		console.error('Error:', error);
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : 'Unknown error occurred'
+		};
+	}
+}
+
+export async function updateConversation(jwt: String, id: number, title: string) {
+	try {
+		const response = await fetch(`${API_CONFIG.BASE_URL}/conversations`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			},
+			body: JSON.stringify({
+				id: id,
+				title: title
+			})
+		});
+
+		// Handle non-2xx responses properly
+		if (!response.ok) {
+			const errorData = await response.json(); // assuming the API provides error details
+			return { success: false, error: errorData.message || 'Conversation update failed' };
 		}
 
 		// If successful, return success

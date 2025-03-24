@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import { API_CONFIG } from '$lib/api/config';
 
-export const load: PageLoad = async ({ params, fetch, parent, depends }) => {
+export const load: PageLoad = async ({ params, fetch, parent }) => {
 	const { authToken } = await parent();
 	const conversationId = params.conversation_id; // Get conversationId from URL params
 
