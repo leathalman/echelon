@@ -79,7 +79,10 @@
 		if (conversation) {
 			if (conversation.title === "Untitled") {
 				let title = await createTitle(data.authToken, messages.value);
-				conversation.title = title
+				if (title !== "") {
+					conversation.title = title
+					await updateConversation(data.authToken, conversationId, title);
+				}
 
 				await updateConversation(data.authToken, conversationId, title);
 			}
