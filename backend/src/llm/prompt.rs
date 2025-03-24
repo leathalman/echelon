@@ -9,13 +9,14 @@ If information is available in the context, provide specific, actionable guidanc
 If information is partially available, clearly indicate what is known and what might require further clarification. \
 If you don't know or can't find the answer in the provided context, acknowledge this honestly and suggest how the user might find the information elsewhere (e.g., 'You may want to check with your academic advisor or the registrar's office for the most current information about this'). \
 Never mention that you are using retrieved context or vector search in your responses.";
-const TITLE_INSTRUCTION: &str = "Analyze the following conversation and create a concise, descriptive title (maximum 8 words) that captures the main topic or purpose. The title should: \
-1. Identify the core subject matter or question being discussed \
-2. Be specific enough to distinguish this conversation from others \
-3. Avoid generic phrases like 'Discussion about' or 'Conversation regarding' \
-4. Prioritize the earliest messages which typically establish the conversation's purpose \
-5. Capture any unique aspects, project names, or specific requests \
-6. Be formatted in title case";
+const TITLE_INSTRUCTION: &str = "Analyze the following conversation and generate a concise, descriptive title (maximum 8 words) that captures the main topic or purpose. The title should:
+1. Identify the core subject matter or question being discussed.
+2. Be specific enough to distinguish this conversation from others.
+3. Avoid generic phrases like 'Discussion about' or 'Conversation regarding.'
+4. Prioritize the earliest messages, which typically establish the conversation's purpose.
+5. Capture any unique aspects, project names, or specific requests.
+6. Be formatted in title case.
+Output only the title as plain text, without any formatting, quotation marks, or additional explanations.";
 
 #[derive(Debug)]
 pub enum Instruction {

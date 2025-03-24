@@ -5,9 +5,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { page } from '$app/state';
-	import { createCompletion, createMessage, fetchMessages } from '$lib/api/client';
+	import { createCompletion, createMessage, createTitle, fetchMessages, updateConversation } from '$lib/api/client';
 	import { type Message, messages } from '$lib/model/messages.svelte';
 	import { newMessage } from '$lib/model/messages.svelte.js';
+	import { conversations } from '$lib/model/conversations.svelte';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -70,6 +72,23 @@
 			// With shift - let the default behavior (newline) happen
 		}
 	}
+
+	async function handleTitleCreation() {
+		let conversation = conversations.value.find(conversation => conversation.id === conversationId);
+
+		if (conversation) {
+			if (conversation.title === "Untitled") {
+				let title = await createTitle(data.authToken, messages.value);
+				conversation.title = title
+
+				await updateConversation(data.authToken, conversationId, title);
+			}
+		}
+	}
+
+	onMount(async () => {
+		await handleTitleCreation()
+	});
 </script>
 
 <div class="flex flex-col items-center pt-24">
