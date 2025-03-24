@@ -91,13 +91,13 @@
 		{/if}
 	</div>
 	<div class="fixed bottom-0 pb-6 bg-background" style="width: {markdownWidth}px">
-		<div class="flex flex-row bg-background rounded-lg shadow-lg border justify-between">
+		<div class="flex flex-row rounded-lg shadow-lg border justify-between bg-white">
 			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
 				<TextareaPlain
 					bind:height={textAreaHeight}
 					bind:value={query}
 					onkeydown={handleKeydown}
-					class="w-full font-medium"
+					class="w-full font-medium bg-white"
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">
