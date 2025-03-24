@@ -1,6 +1,6 @@
 use crate::app_state::AppState;
 use crate::llm::inference::InferenceRequest;
-use crate::llm::prompt::Prompt;
+use crate::llm::prompt::{Instruction, Prompt};
 use crate::processing::embedding::embed;
 use crate::storage::model::DBMessageRole;
 use crate::storage::vector::VectorStorage;
@@ -11,7 +11,7 @@ use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use tracing::error;
+use tracing::{error, info};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -57,6 +57,7 @@ pub async fn completion_new_handler(
         }
     };
 
+    // TODO: look into the score of what is returned...
     // add five highest rated results from VecDB to context for query
     let mut context = String::new();
     vector_search_result
@@ -67,8 +68,9 @@ pub async fn completion_new_handler(
 
     let prompt = Prompt::new(
         payload.messages,
-        context,
-        user_queries.last().unwrap().to_string(),
+        Some(context),
+        Some(user_queries.last().unwrap().to_string()),
+        Instruction::RAG,
     );
 
     let completion = state
