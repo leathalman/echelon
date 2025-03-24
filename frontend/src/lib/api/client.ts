@@ -134,6 +134,32 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 	}
 }
 
+export async function createTitle(jwt: string, messages: Message[]) {
+	try {
+		const formattedMessages = messages.map((message) => ({
+			content: message.content,
+			role: message.role
+		}));
+
+		const response = await fetch(`${API_CONFIG.BASE_URL}/completions/title`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${jwt}`
+			},
+			body: JSON.stringify({
+				messages: formattedMessages,
+			})
+		});
+
+		const data = await response.json();
+		return data.content;
+	} catch (error) {
+		console.error('Error:', error);
+		return '';
+	}
+}
+
 export async function updateUser(jwt: string, studentId: string, firstName: string, lastName: string, university: string): Promise<{ success: boolean; error?: string }> {
 	try {
 		const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {

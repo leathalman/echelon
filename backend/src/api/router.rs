@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{middleware, routing::get, routing::post, Router};
-use crate::api::completions::completion_new_handler;
+use crate::api::completions::{completion_new_handler, completion_new_title_handler};
 use crate::api::conversations::{conversation_list_handler, conversation_list_messages, conversation_new_handler, conversation_new_message_handler};
 use crate::api::health::health_checker_handler;
 use crate::app_state::AppState;
@@ -30,6 +30,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(conversation_list_messages).post(conversation_new_message_handler),
         )
         .route("/completions", post(completion_new_handler))
+        .route("/completions/title", post(completion_new_title_handler))
         .route("/users", get(user_get_handler).put(user_update_handler))
         .layer(auth_layer);
 

@@ -11,7 +11,7 @@ use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use tracing::{error, info};
+use tracing::{error};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -23,6 +23,11 @@ pub struct ApiMessage {
 pub struct CreateCompletionSchema {
     pub messages: Vec<ApiMessage>,
     pub collection: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateTitleCompletionSchema {
+    pub messages: Vec<ApiMessage>,
 }
 
 /// POST /api/completions -> JWT required
@@ -87,3 +92,53 @@ pub async fn completion_new_handler(
 
     Ok(Json(json_response))
 }
+
+/// POST /api/completions/title -> JWT required
+// TODO: using unwrap... server will crash if completion is not executed properly
+pub async fn completion_new_title_handler(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<CreateTitleCompletionSchema>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let prompt = Prompt {
+        history: payload.messages,
+        context: None,
+        question: None,
+        instruction: Instruction::Title,
+    };
+
+    let completion = state
+        .llm
+        .generate(InferenceRequest::new(prompt))
+        .await
+        .unwrap();
+
+    let json_response = json!({
+        "content": completion.content,
+        "generation_time": completion.generation_time,
+        "token_count": completion.token_count
+    });
+
+    Ok(Json(json_response))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

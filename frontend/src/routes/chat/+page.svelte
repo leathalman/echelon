@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { type Message, messages } from '$lib/model/messages.svelte';
 	import { conversations } from '$lib/model/conversations.svelte';
-	import { createCompletion, createConversation, createMessage } from '$lib/api/client';
+	import { createCompletion, createConversation, createMessage, createTitle } from '$lib/api/client';
 	import { newMessage } from '$lib/model/messages.svelte.js';
 
 	let query = $state('');
@@ -44,6 +44,7 @@
 				});
 
 				// create completion to get conversation title
+				createTitle(data.authToken, messages.value)
 
 				// update conversation with title
 
