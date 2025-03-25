@@ -15,6 +15,8 @@ RUN npm prune --production
 FROM node:22-alpine
 WORKDIR /app
 
+COPY .env.production .env.production
+
 # copy only the necessary files from builder
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/

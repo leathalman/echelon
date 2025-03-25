@@ -6,7 +6,7 @@ use backend::api::router::create_router;
 use backend::app_state::AppState;
 use backend::config::{Config, Environment};
 use backend::llm::inference;
-use backend::llm::model::Model::{Gemma3_12b};
+use backend::llm::model::Model;
 use backend::storage::postgres::RelationalStorage;
 use backend::storage::qdrant::QdrantAdapter;
 use std::sync::Arc;
@@ -27,9 +27,14 @@ async fn main() {
 
     info!("Environment: {}", config.environment);
 
+    let origin = match config.environment {
+        Environment::Development => "http://localhost:3000",
+        Environment::Production => "https://echelongpt.com"
+    };
+
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE])
+        .allow_origin(origin.parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE, Method::OPTIONS])
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
@@ -51,9 +56,9 @@ async fn main() {
     let app = create_router(Arc::new(AppState {
         relational_storage: RelationalStorage::new(&config.postgres_url)
             .await
-            .unwrap(),
+            .expect("Unable to connect to Relational Storage (Postgres) from URL"),
         vector_storage,
-        llm: inference::build(Gemma3_12b),
+        llm: inference::build(Model::Mistral24b, &config.ollama_url, config.ollama_port),
         config,
     }))
         .layer(cors);
