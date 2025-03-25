@@ -10,6 +10,7 @@
 	import { newMessage } from '$lib/model/messages.svelte.js';
 	import { conversations } from '$lib/model/conversations.svelte';
 	import { onMount } from 'svelte';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 
 	let { data } = $props();
 
@@ -109,7 +110,11 @@
 			{/if}
 		{/each}
 		{#if newMessage.completionPending}
-			<span class="text-md">Thinking...</span>
+			<div class="space-y-2">
+				<Skeleton class="h-4 w-full" />
+				<Skeleton class="h-4 w-3/4" />
+				<Skeleton class="h-4 w-1/4" />
+			</div>
 		{/if}
 	</div>
 	<div class="fixed bottom-0 pb-6 bg-background" style="width: {markdownWidth}px">
