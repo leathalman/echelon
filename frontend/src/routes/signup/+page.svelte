@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import * as Alert from "$lib/components/ui/alert/index.js";
+	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './signup_schema';
 	import {
@@ -11,7 +11,7 @@
 	} from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { Button } from '$lib/components/ui/button';
-	import CircleAlert from "lucide-svelte/icons/circle-alert";
+	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import { signup } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
 	import Cookies from 'js-cookie';
@@ -23,21 +23,21 @@
 		validators: zodClient(formSchema)
 	});
 
-	const { form: formData, enhance, validateForm} = form;
+	const { form: formData, enhance, validateForm } = form;
 
-	let signUpFailed = $state(false)
+	let signUpFailed = $state(false);
 
 	async function handleSignup() {
 		const formValidation = await validateForm();
 
 		if (formValidation.valid) {
-			const response = await signup($formData.email, $formData.password);
+			const response = await signup($formData.email.toLowerCase(), $formData.password);
 			if (response.error) {
-				signUpFailed = true
+				signUpFailed = true;
 			} else {
-				signUpFailed = false
-				Cookies.set('onboarding_complete', false)
-				await goto("/onboarding")
+				signUpFailed = false;
+				Cookies.set('onboarding_complete', false);
+				await goto('/onboarding');
 			}
 		}
 	}
@@ -69,14 +69,15 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-					{#if signUpFailed}
-						<Alert.Root variant="destructive" class="mt-8">
-							<CircleAlert class="size-4" />
-							<Alert.Title>Authentication Error</Alert.Title>
-							<Alert.Description
-							>Unable to complete sign up. Please try again later.</Alert.Description>
-						</Alert.Root>
-					{/if}
+				{#if signUpFailed}
+					<Alert.Root variant="destructive" class="mt-8">
+						<CircleAlert class="size-4" />
+						<Alert.Title>Authentication Error</Alert.Title>
+						<Alert.Description
+						>Unable to complete sign up. Please try again later.
+						</Alert.Description>
+					</Alert.Root>
+				{/if}
 				<Form.Button class="w-full mt-6" onclick={handleSignup}>
 					Continue
 				</Form.Button>

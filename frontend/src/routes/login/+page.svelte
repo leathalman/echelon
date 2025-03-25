@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Card from '$lib/components/ui/card';
-	import * as Alert from "$lib/components/ui/alert/index.js";
+	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema, type FormSchema } from './login_schema';
 	import {
@@ -13,7 +13,7 @@
 	import { login } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
-	import CircleAlert from "lucide-svelte/icons/circle-alert";
+	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import Cookies from 'js-cookie';
 
 
@@ -26,24 +26,24 @@
 
 	const { form: formData, enhance, validateForm } = form;
 
-	let loginFailed = $state(false)
+	let loginFailed = $state(false);
 
 	async function handleLogin() {
 		const formValidation = await validateForm();
 
 		if (formValidation.valid) {
 			try {
-				const loginResponse = await login($formData.email, $formData.password);
+				const loginResponse = await login($formData.email.toLowerCase(), $formData.password);
 				if (loginResponse.success) {
-					loginFailed = false
-					Cookies.set("onboarding_complete", true)
-					await goto('/chat')
+					loginFailed = false;
+					Cookies.set('onboarding_complete', true);
+					await goto('/chat');
 				} else {
-					loginFailed = true
+					loginFailed = true;
 				}
 			} catch (error) {
-				console.log(error)
-				loginFailed = true
+				console.log(error);
+				loginFailed = true;
 			}
 		}
 	}
@@ -82,7 +82,8 @@
 							<CircleAlert class="size-4" />
 							<Alert.Title>Authentication Error</Alert.Title>
 							<Alert.Description
-							>Your username or password was incorrect.</Alert.Description>
+							>Your username or password was incorrect.
+							</Alert.Description>
 						</Alert.Root>
 					{/if}
 				</div>
