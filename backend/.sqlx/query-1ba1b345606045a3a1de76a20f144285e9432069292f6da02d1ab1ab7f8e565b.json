@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        UPDATE chat.conversations\n        SET title = $2\n        WHERE id = $1\n        RETURNING id, owner_id, title, last_message_at, status as \"status!: DBConversationStatus\"\n        ",
+  "query": "\n            UPDATE chat.conversations\n            SET title = $2\n            WHERE id = $1\n            RETURNING id, owner_id, title, last_message_at, status as \"status!: DBConversationStatus\"\n            ",
   "describe": {
     "columns": [
       {
@@ -55,5 +55,5 @@
       false
     ]
   },
-  "hash": "cf3ea4523803263d9607d2ee9b74677b2a2d4dcc7c9fc18afd8ced02b8e28421"
+  "hash": "1ba1b345606045a3a1de76a20f144285e9432069292f6da02d1ab1ab7f8e565b"
 }

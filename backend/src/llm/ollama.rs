@@ -15,11 +15,11 @@ pub struct OllamaAdapter {
 }
 
 impl OllamaAdapter {
-    // Ollama lib panics if default() cannot be constructed.
-    // Must download the models via command line before calling from this program.
-    pub fn new(model: Model) -> Self {
+    /// Ollama lib panics if default() cannot be constructed.
+    /// Must download the models via command line before calling from this program.
+    pub fn new(model: Model, host: &str, port: u16) -> Self {
         Self {
-            client: Ollama::default(),
+            client: Ollama::new(host, port),
             model,
         }
     }

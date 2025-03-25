@@ -3,13 +3,13 @@ use crate::llm::ollama::OllamaAdapter;
 use crate::llm::prompt::Prompt;
 use thiserror::Error;
 
-pub fn build(model: Model) -> OllamaAdapter {
+pub fn build(model: Model, host: &str, port: u16) -> OllamaAdapter {
     match model {
         Model::Llama3_3b | Model::Llama3_11b | Model::Phi4 | Model::BespokeMinicheck => {
-            OllamaAdapter::new(model)
+            OllamaAdapter::new(model, host, port)
         }
         // default to Ollama
-        _ => OllamaAdapter::new(model),
+        _ => OllamaAdapter::new(model, host, port),
     }
 }
 

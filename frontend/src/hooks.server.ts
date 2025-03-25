@@ -11,9 +11,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const isOnboardingRoute = event.url.pathname === onboardingRoute;
 
 	// If not logged in and trying to access protected route, redirect to landing
-	if ((!auth_token || auth_token === 'null' || auth_token === 'undefined') &&
-		!isPublicRoute && !isOnboardingRoute) {
-		console.log("Redirected from hooks -> attempted to access private route");
+	if (
+		(!auth_token || auth_token === 'null' || auth_token === 'undefined') &&
+		!isPublicRoute &&
+		!isOnboardingRoute
+	) {
+		console.log('Redirected from hooks -> attempted to access private route');
 		return new Response(null, {
 			status: 303,
 			headers: { Location: '/' }
@@ -24,9 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (auth_token && auth_token !== 'null' && auth_token !== 'undefined') {
 		// Case 1: If user has auth token but hasn't completed onboarding and tries to access a
 		// route other than onboarding, redirect to onboarding
-		if ((!onboarding_complete || onboarding_complete === 'false') &&
-			!isOnboardingRoute) {
-			console.log("Redirected from hooks -> onboarding not complete");
+		if (onboarding_complete === 'false' && !isOnboardingRoute) {
+			console.log('Redirected from hooks -> onboarding not complete');
 			return new Response(null, {
 				status: 303,
 				headers: { Location: '/onboarding' }
@@ -36,7 +38,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// Case 2: If user has auth token, has completed onboarding, and is trying to
 		// access public routes or onboarding, redirect to chat
 		if (onboarding_complete === 'true' && (isPublicRoute || isOnboardingRoute)) {
-			console.log("Redirected from hooks -> already logged in, bypass public routes");
+			console.log('Redirected from hooks -> already logged in, bypass public routes');
 			return new Response(null, {
 				status: 303,
 				headers: { Location: '/chat' }

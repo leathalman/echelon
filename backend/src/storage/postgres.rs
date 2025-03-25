@@ -28,7 +28,7 @@ impl RelationalStorage {
             r#"
             INSERT INTO chat.users (email, password_hash)
             VALUES ($1, $2)
-            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university
+            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university, academic_profile
             "#,
             email,
             password_hash
@@ -51,7 +51,7 @@ impl RelationalStorage {
             UPDATE chat.users
             SET student_id = $2, first_name = $3, last_name = $4, university = $5
             WHERE id = $1
-            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university
+            RETURNING id, student_id, email, password_hash, first_name, last_name, created_at, last_login_at, university, academic_profile
             "#,
             id,
             student_id,
