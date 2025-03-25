@@ -47,6 +47,11 @@
         "ordinal": 8,
         "name": "university",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "academic_profile",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -61,6 +66,7 @@
       false,
       false,
       false,
+      true,
       true,
       true,
       true

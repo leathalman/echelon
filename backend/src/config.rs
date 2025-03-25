@@ -32,6 +32,8 @@ pub struct Config {
     pub qdrant_url: String,
     // not required for development environments
     pub qdrant_api_key: Result<String, VarError>,
+    pub ollama_url: String,
+    pub ollama_port: u16,
     pub jwt_secret: String,
     pub jwt_expired_in: i64,
     pub jwt_max_age: i64,
@@ -50,6 +52,10 @@ impl Config {
         let postgres_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let qdrant_url = std::env::var("QDRANT_URL").expect("QDRANT_URL must be set");
         let qdrant_api_key = std::env::var("QDRANT_API_KEY");
+        let ollama_url = std::env::var("OLLAMA_URL").expect("OLLAMA_URL must be set");
+        let ollama_port = std::env::var("OLLAMA_PORT")
+            .expect("OLLAMA_PORT must be set").parse::<u16>()
+            .expect("Could not parse OLLAMA_PORT as u16");
         let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
         let jwt_expired_in = std::env::var("JWT_EXPIRED_IN")
             .expect("JWT_EXPIRED_IN must be set").parse::<i64>()
@@ -63,6 +69,8 @@ impl Config {
             postgres_url,
             qdrant_url,
             qdrant_api_key,
+            ollama_url,
+            ollama_port,
             jwt_secret,
             jwt_expired_in,
             jwt_max_age,

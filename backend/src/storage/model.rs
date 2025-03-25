@@ -40,6 +40,7 @@ pub struct DBUser {
     pub created_at: DateTime<Utc>,
     pub last_login_at: DateTime<Utc>,
     pub university: Option<String>,
+    pub academic_profile: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
