@@ -51,7 +51,7 @@ async fn main() {
     let app = create_router(Arc::new(AppState {
         relational_storage: RelationalStorage::new(&config.postgres_url)
             .await
-            .unwrap(),
+            .expect("Unable to connect to Relational Storage (Postgres) from URL"),
         vector_storage,
         llm: inference::build(Gemma3_12b),
         config,
