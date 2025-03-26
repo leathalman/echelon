@@ -3,6 +3,7 @@ import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './login_schema';
+import { redirect } from '@sveltejs/kit'
 
 export const load: PageServerLoad = async () => {
 	return {
@@ -18,8 +19,9 @@ export const actions: Actions = {
 				form
 			});
 		}
-		return {
-			form
-		};
+
+		// The login was already handled on the client side
+		// Just redirect now
+		throw redirect(302, '/chat');
 	}
 };
