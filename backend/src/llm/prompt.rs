@@ -27,16 +27,23 @@ pub enum Instruction {
 #[derive(Debug)]
 pub struct Prompt {
     pub history: Vec<ApiMessage>,
+    pub profile: Option<String>,
     pub context: Option<String>,
     pub question: Option<String>,
     pub instruction: Instruction,
 }
 
 impl Prompt {
-    pub fn new(history: Vec<ApiMessage>, context: Option<String>, question: Option<String>,
-               instruction: Instruction) -> Self {
+    pub fn new(
+        history: Vec<ApiMessage>,
+        profile: Option<String>,
+        context: Option<String>,
+        question: Option<String>,
+        instruction: Instruction,
+    ) -> Self {
         Prompt {
             history,
+            profile,
             instruction,
             context,
             question,
@@ -52,17 +59,20 @@ impl Prompt {
             ));
         }
 
-        let context = self.context.unwrap_or_else(|| { "".to_string() });
-        let question = self.question.unwrap_or_else(|| { "".to_string() });
+        let profile = self.profile.unwrap_or_else(|| "".to_string());
+        let context = self.context.unwrap_or_else(|| "".to_string());
+        let question = self.question.unwrap_or_else(|| "".to_string());
 
         let instruction = match self.instruction {
             Instruction::RAG => RAG_INSTRUCTION,
-            Instruction::Title => TITLE_INSTRUCTION
+            Instruction::Title => TITLE_INSTRUCTION,
         };
 
         format!(
             "Chat History:\n\
         {formatted_history}\
+        Student's Academic Profile: \n\
+        {}\n\
         Context:\n\
         {}\n\
         Question:\n\
@@ -70,7 +80,7 @@ impl Prompt {
         Instruction:\n\
         {}
         ",
-            context, question, instruction
+            profile, context, question, instruction
         )
     }
 
@@ -85,7 +95,7 @@ impl Prompt {
 
         let instruction = match self.instruction {
             Instruction::RAG => RAG_INSTRUCTION,
-            Instruction::Title => TITLE_INSTRUCTION
+            Instruction::Title => TITLE_INSTRUCTION,
         };
 
         format!(

@@ -2,16 +2,16 @@ use crate::app_state::AppState;
 use crate::llm::inference::InferenceRequest;
 use crate::llm::prompt::{Instruction, Prompt};
 use crate::processing::embedding::embed;
-use crate::storage::model::DBMessageRole;
+use crate::storage::model::{DBMessageRole, DBUser};
 use crate::storage::vector::VectorStorage;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
+use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use tracing::{error};
+use tracing::{error, info};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -35,6 +35,7 @@ pub struct CreateTitleCompletionSchema {
 // TODO: generalize error message return (look at auth for this)
 pub async fn completion_new_handler(
     State(state): State<Arc<AppState>>,
+    Extension(user): Extension<DBUser>,
     Json(payload): Json<CreateCompletionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let user_queries: Vec<String> = payload
@@ -71,12 +72,17 @@ pub async fn completion_new_handler(
         .take(5)
         .for_each(|point| context.push_str(&point.content));
 
+    let profile = user.academic_profile.unwrap_or_else(|| "".to_string());
+
     let prompt = Prompt::new(
         payload.messages,
+        Some(profile),
         Some(context),
         Some(user_queries.last().unwrap().to_string()),
         Instruction::RAG,
     );
+
+    info!("PROMPT:\n\n{:?}\n\n", prompt);
 
     let completion = state
         .llm
@@ -101,6 +107,7 @@ pub async fn completion_new_title_handler(
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let prompt = Prompt {
         history: payload.messages,
+        profile: None,
         context: None,
         question: None,
         instruction: Instruction::Title,

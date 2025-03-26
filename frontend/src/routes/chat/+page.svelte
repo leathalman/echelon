@@ -85,7 +85,7 @@
 			bind:value={query}
 			onkeydown={handleKeydown}
 			class="text-md mt-4 ml-5 bg-white"
-			placeholder="Ask Echelon (Press Enter to send, Shift+Enter for new line)"></TextareaPlain>
+			placeholder="Ask Echelon"></TextareaPlain>
 		<div class="flex w-full justify-end items-end py-2 px-2">
 			<Button class="w-9 h-9 rounded-xl" onclick={handleSubmitQuery}>
 				<ArrowUp />

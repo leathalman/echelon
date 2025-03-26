@@ -111,9 +111,15 @@
 		{/each}
 		{#if newMessage.completionPending}
 			<div class="space-y-2">
-				<Skeleton class="h-4 w-full" />
+				<div class="flex flex-row">
+					<Skeleton class="h-4 w-4/6" />
+					<Skeleton class="h-4 w-1/6 ml-3" />
+				</div>
 				<Skeleton class="h-4 w-3/4" />
-				<Skeleton class="h-4 w-1/4" />
+				<div class="flex flex-row">
+					<Skeleton class="h-4 w-1/4" />
+					<Skeleton class="h-4 w-1/4 ml-3" />
+				</div>
 			</div>
 		{/if}
 	</div>
