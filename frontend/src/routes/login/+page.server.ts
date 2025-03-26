@@ -19,9 +19,5 @@ export const actions: Actions = {
 				form
 			});
 		}
-
-		// The login was already handled on the client side
-		// Just redirect now
-		throw redirect(302, '/chat');
 	}
 };
