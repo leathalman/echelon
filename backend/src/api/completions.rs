@@ -11,7 +11,7 @@ use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use tracing::{error, info};
+use tracing::{error};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -69,7 +69,7 @@ pub async fn completion_new_handler(
     vector_search_result
         .points
         .into_iter()
-        .take(5)
+        .take(15)
         .for_each(|point| context.push_str(&point.content));
 
     let profile = user.academic_profile.unwrap_or_else(|| "".to_string());
@@ -82,7 +82,7 @@ pub async fn completion_new_handler(
         Instruction::RAG,
     );
 
-    info!("PROMPT:\n\n{:?}\n\n", prompt);
+    // info!("PROMPT:\n\n{:?}\n\n", prompt);
 
     let completion = state
         .llm
