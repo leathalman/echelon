@@ -14,8 +14,8 @@
 @layer base {
     :root {
         /*
-        Foreground -> Text Color
         Background -> BG Color
+        Foreground -> Text Color
         */
         --background: 0 0% 98%;
         --foreground: 224 71.4% 4.1%;

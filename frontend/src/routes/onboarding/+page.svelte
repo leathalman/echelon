@@ -28,24 +28,29 @@
 	const { form: formData, enhance, validateForm } = form;
 
 	let signupFailed = $state(false);
+	let loading = $state(false);
 
 	async function handleCompleteOnboarding() {
 		const formValidation = await validateForm();
 
 		if (formValidation.valid) {
+			loading = true;
+
 			try {
 				if (data.authToken) {
 					const signupResult = await updateUser(data.authToken, $formData.student_id, $formData.first_name, $formData.last_name, $formData.university.toLowerCase().replaceAll(' ', '_'));
 
 					if (signupResult.error) {
 						signupFailed = true;
+						loading = false;
 					} else {
-						Cookies.set('onboarding_complete', true)
+						Cookies.set('onboarding_complete', true);
 						await goto('/chat');
+						loading = false;
 					}
-
 				} else {
 					signupFailed = true;
+					loading = false;
 				}
 			} catch (error) {
 				console.error('Unexpected error during onboarding:', error);
@@ -122,9 +127,16 @@
 						</Alert.Description>
 					</Alert.Root>
 				{/if}
-				<Form.Button
-					class="w-full mt-6" onclick={handleCompleteOnboarding}>Continue
-				</Form.Button>
+
+				{#if loading}
+					<Form.Button
+						class="w-full mt-6" disabled>Loading...
+					</Form.Button>
+				{:else}
+					<Form.Button
+						class="w-full mt-6" onclick={handleCompleteOnboarding}>Continue
+					</Form.Button>
+				{/if}
 			</form>
 		</Card.Content>
 		<Card.Footer>

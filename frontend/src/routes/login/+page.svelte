@@ -27,23 +27,29 @@
 	const { form: formData, enhance, validateForm } = form;
 
 	let loginFailed = $state(false);
+	let loading = $state(false);
 
 	async function handleLogin() {
 		const formValidation = await validateForm();
 
 		if (formValidation.valid) {
+			loading = true
+
 			try {
 				const loginResponse = await login($formData.email.toLowerCase(), $formData.password);
 				if (loginResponse.success) {
 					loginFailed = false;
 					Cookies.set('onboarding_complete', true);
 					await goto('/chat');
+					loading = false
 				} else {
 					loginFailed = true;
+					loading = false
 				}
 			} catch (error) {
 				console.log(error);
 				loginFailed = true;
+				loading = false
 			}
 		}
 	}
@@ -87,9 +93,15 @@
 						</Alert.Root>
 					{/if}
 				</div>
-				<Form.Button
-					class="w-full mt-6" onclick={handleLogin}>Continue
-				</Form.Button>
+				{#if loading}
+					<Form.Button
+						class="w-full mt-6" disabled>Loading...
+					</Form.Button>
+				{:else}
+					<Form.Button
+						class="w-full mt-6" onclick={handleLogin}>Continue
+					</Form.Button>
+				{/if}
 			</form>
 		</Card.Content>
 		<Card.Footer>

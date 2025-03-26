@@ -26,18 +26,22 @@
 	const { form: formData, enhance, validateForm } = form;
 
 	let signUpFailed = $state(false);
+	let loading = $state(false);
 
 	async function handleSignup() {
 		const formValidation = await validateForm();
 
 		if (formValidation.valid) {
+			loading = true;
 			const response = await signup($formData.email.toLowerCase(), $formData.password);
 			if (response.error) {
 				signUpFailed = true;
+				loading = false;
 			} else {
 				signUpFailed = false;
 				Cookies.set('onboarding_complete', false);
 				await goto('/onboarding');
+				loading = false;
 			}
 		}
 	}
@@ -60,7 +64,7 @@
 					</Form.Control>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Form.Field {form} name="password" class="my-4">
+				<Form.Field class="my-4" {form} name="password">
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Password</Form.Label>
@@ -78,15 +82,21 @@
 						</Alert.Description>
 					</Alert.Root>
 				{/if}
-				<Form.Button class="w-full mt-6" onclick={handleSignup}>
-					Continue
-				</Form.Button>
+				{#if loading}
+					<Form.Button class="w-full mt-6" disabled>
+						Loading...
+					</Form.Button>
+				{:else}
+					<Form.Button class="w-full mt-6" onclick={handleSignup}>
+						Continue
+					</Form.Button>
+				{/if}
 			</form>
 		</Card.Content>
 		<Card.Footer>
 			<div class="flex flex-row w-full items-center justify-center mt-2 text-sm text-muted-foreground">
 				<span class="mr-1">Already have an account?</span>
-				<Button href="/login" variant="link" class="m-0 p-0">Log in</Button>
+				<Button class="m-0 p-0" href="/login" variant="link">Log in</Button>
 			</div>
 		</Card.Footer>
 	</Card.Root>
