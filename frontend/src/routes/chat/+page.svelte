@@ -31,6 +31,8 @@
 
 		await createMessage(data.authToken, conversationId, query, 'User');
 
+		await goto(`/chat/${conversationId}`);
+
 		newMessage.completionPending = true;
 		newMessage.content = query;
 
@@ -53,7 +55,7 @@
 				newMessage.completionPending = false;
 				console.error('Error in completion:', error);
 			});
-		await goto(`/chat/${conversationId}`);
+		// await goto(`/chat/${conversationId}`);
 	}
 
 	function handleKeydown(event: KeyboardEvent) {

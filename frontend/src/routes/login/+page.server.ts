@@ -3,7 +3,6 @@ import { fail } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { formSchema } from './login_schema';
-import { redirect } from '@sveltejs/kit'
 
 export const load: PageServerLoad = async () => {
 	return {
