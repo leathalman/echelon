@@ -118,7 +118,7 @@
 				<Skeleton class="h-4 w-3/4" />
 				<div class="flex flex-row">
 					<Skeleton class="h-4 w-1/4" />
-					<Skeleton class="h-4 w-1/4 ml-3" />
+					<Skeleton class="h-4 w-1/2 ml-3" />
 				</div>
 			</div>
 		{/if}

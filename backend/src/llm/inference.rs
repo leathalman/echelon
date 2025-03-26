@@ -46,7 +46,7 @@ impl Default for InferenceOptions {
         Self {
             max_tokens: Some(-1),
             context_window: Some(32768),
-            temperature: Some(0.8),
+            temperature: Some(0.2),
         }
     }
 }
