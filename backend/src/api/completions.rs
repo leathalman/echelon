@@ -49,6 +49,8 @@ pub async fn completion_new_handler(
 
     let user_queries_embedded = embed(user_queries_flattened).unwrap();
 
+    // info!("PAYLOAD COLLECTION: {}", payload.collection);
+
     let vector_search_result = match state
         .vector_storage
         .query(&payload.collection, user_queries_embedded)
@@ -69,7 +71,7 @@ pub async fn completion_new_handler(
     vector_search_result
         .points
         .into_iter()
-        .take(15)
+        .take(5)
         .for_each(|point| context.push_str(&point.content));
 
     let profile = user.academic_profile.unwrap_or_else(|| "".to_string());

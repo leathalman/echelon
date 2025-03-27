@@ -38,6 +38,51 @@ pub fn chunk(content: String) -> Result<Vec<String>, ChunkError> {
     }
 }
 
+pub fn chunk_by_words(
+    content: String,
+    max_words_per_chunk: usize,
+    overlap_word_count: usize,
+) -> Result<Vec<String>, ChunkError> {
+    if content.is_empty() {
+        return Ok(vec![]);
+    }
+
+    let words: Vec<&str> = content.split_whitespace().collect();
+
+    if words.is_empty() {
+        return Ok(vec![]);
+    }
+
+    // Ensure overlap is smaller than chunk size
+    let effective_overlap = overlap_word_count.min(max_words_per_chunk - 1);
+    let step_size = max_words_per_chunk - effective_overlap;
+
+    let mut chunks = Vec::new();
+
+    // Calculate how many full chunks we'll have
+    let num_full_chunks = if words.len() <= max_words_per_chunk {
+        1
+    } else {
+        1 + (words.len() - max_words_per_chunk + step_size - 1) / step_size
+    };
+
+    for i in 0..num_full_chunks {
+        let start_position = i * step_size;
+        // Don't go beyond the end of words
+        if start_position >= words.len() {
+            break;
+        }
+
+        let end_position = (start_position + max_words_per_chunk).min(words.len());
+        let chunk_words = &words[start_position..end_position];
+        let chunk = chunk_words.join(" ");
+
+        chunks.push(chunk);
+    }
+
+    Ok(chunks)
+}
+
 #[derive(Debug, Error)]
 pub enum ChunkError {
     #[error("ChunkError occurred: {0}")]
@@ -46,7 +91,7 @@ pub enum ChunkError {
 
 #[cfg(test)]
 mod tests {
-    use crate::processing::chunk::chunk;
+    use crate::processing::chunk::{chunk, chunk_by_words};
 
     #[test]
     fn test_chunk_string_idx_0() {
@@ -82,5 +127,32 @@ mod tests {
         let empty_vec: Vec<String> = vec![];
 
         assert_eq!(result, empty_vec)
+    }
+
+    #[test]
+    fn test_chunk_by_words_with_overlap() {
+        let text = "One two three four five six seven eight nine ten eleven twelve";
+
+        // Test with 4-word chunks and 2-word overlap
+        let result = chunk_by_words(text.to_string(), 4, 2).unwrap();
+        print!("{:?}", result);
+        assert_eq!(result.len(), 5);
+        assert_eq!(result[0], "One two three four");
+        assert_eq!(result[1], "three four five six");
+        assert_eq!(result[2], "five six seven eight");
+        assert_eq!(result[3], "seven eight nine ten");
+        assert_eq!(result[4], "nine ten eleven twelve");
+
+        // Test with 5-word chunks and 0-word overlap
+        let result = chunk_by_words(text.to_string(), 5, 0).unwrap();
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0], "One two three four five");
+        assert_eq!(result[1], "six seven eight nine ten");
+        assert_eq!(result[2], "eleven twelve");
+
+        // Test with larger chunk size than text
+        let result = chunk_by_words(text.to_string(), 20, 5).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0], "One two three four five six seven eight nine ten eleven twelve");
     }
 }

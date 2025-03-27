@@ -7,8 +7,7 @@ use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use tracing::{error, info};
-use std::time::{Instant};
+use tracing::{error};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateMessageSchema {
@@ -95,8 +94,6 @@ pub async fn conversation_list_messages(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<DBUser>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let start = Instant::now();
-
     // fetch convo and check user id, use SQL qeury and compare
     let fetch_conversations = match state
         .relational_storage
@@ -111,9 +108,6 @@ pub async fn conversation_list_messages(
             return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
         }
     };
-
-    let duration = start.elapsed();
-    info!("Duration of conversation call: {}", duration.as_millis());
 
     if fetch_conversations.is_empty() {
         let error_response = json!({
@@ -131,8 +125,6 @@ pub async fn conversation_list_messages(
         }
     }
 
-    let start = Instant::now();
-
     let query_result = state
         .relational_storage
         .get_conversation_messages(conversation_id)
@@ -144,9 +136,6 @@ pub async fn conversation_list_messages(
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
-
-    let duration = start.elapsed();
-    info!("Duration of messages call: {}", duration.as_millis());
 
     let messages = query_result.unwrap();
 

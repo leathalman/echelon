@@ -6,7 +6,7 @@ pub enum Model {
     Llama3_3b,
     #[strum(serialize = "llama3.2-vision:11b")]
     Llama3_11b,
-    #[strum(serialize = "phi4:latest")]
+    #[strum(serialize = "phi4:14b-q4_K_M")]
     Phi4,
     #[strum(serialize = "gpt-4o-2024-08-06")]
     GPT4o,
@@ -16,4 +16,6 @@ pub enum Model {
     Mistral24b,
     #[strum(serialize = "gemma3:27b-it-q4_K_M")]
     Gemma3,
+    #[strum(serialize = "mistral:7b-instruct-q4_K_M")]
+    Mistral,
 }

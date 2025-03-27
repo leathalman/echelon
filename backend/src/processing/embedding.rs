@@ -1,4 +1,4 @@
-use fastembed::{Embedding, TextEmbedding};
+use fastembed::{Embedding, EmbeddingModel, InitOptions, TextEmbedding};
 use once_cell::sync::OnceCell;
 use std::sync::Arc;
 use thiserror::Error;
@@ -9,7 +9,7 @@ static MODEL: OnceCell<Arc<TextEmbedding>> = OnceCell::new();
 pub fn get_model() -> Result<Arc<TextEmbedding>, EmbeddingError> {
     MODEL
         .get_or_try_init(|| {
-            let model = TextEmbedding::try_new(Default::default()).map_err(|e| {
+            let model = TextEmbedding::try_new(InitOptions::new(EmbeddingModel::BGELargeENV15)).map_err(|e| {
                 EmbeddingError::Message(format!("Failed to initialize embedding model: {}", e))
             })?;
             Ok(Arc::new(model))

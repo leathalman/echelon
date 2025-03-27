@@ -1,4 +1,4 @@
-use backend::processing::chunk::chunk;
+use backend::processing::chunk::{chunk, chunk_by_words};
 use backend::processing::document::Document;
 use backend::processing::embedding::embed_batch;
 use backend::processing::utils::compile_vectors;
@@ -26,15 +26,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let db_collection = "texas_christian_university";
+    let db_collection = "texas_christian_university5";
 
     vector_storage
-        .create_collection(db_collection, EmbeddingModel::AllMiniLML6V2)
+        .create_collection(db_collection, EmbeddingModel::BGELargeENV15)
         .await?;
 
-    let document = Document::new(Path::new("./data/course_catalog.md"))?;
+    // bge large
 
-    let chunks = chunk(document.content)?;
+    let document = Document::new(Path::new("/Users/harrison/Developer/echelon/backend/data/Course_Catalog.md"))?;
+
+    let max_words = 1000;
+    let overlap = max_words / 10; // 10% overlap
+
+    let chunks = chunk_by_words(document.content, max_words, overlap)?;
+
+    // print!("{:?}", chunks.len());
+    // print!("{:?}", chunks);
 
     let embeddings = embed_batch(&chunks)?;
 

@@ -90,7 +90,8 @@ impl VectorStorage for QdrantAdapter {
                 QueryPointsBuilder::new(collection_name)
                     .query(vector)
                     .with_payload(true)
-                    .with_vectors(true),
+                    .with_vectors(true)
+                    .limit(5),
             )
             .await
         {
