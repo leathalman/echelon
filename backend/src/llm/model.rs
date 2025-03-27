@@ -12,7 +12,7 @@ pub enum Model {
     GPT4o,
     #[strum(serialize = "bespoke-minicheck")]
     BespokeMinicheck,
-    #[strum(serialize = "mistral-small:24b")]
+    #[strum(serialize = "mistral-small:24b-instruct-2501-q4_K_M")]
     Mistral24b,
     #[strum(serialize = "gemma3:27b-it-q4_K_M")]
     Gemma3,
