@@ -1,4 +1,4 @@
-use crate::processing::chunk::ChunkError;
+use crate::vectorization::chunk::ChunkError;
 use crate::storage::vector::VectorDataPoint;
 use fastembed::Embedding;
 use uuid::Uuid;

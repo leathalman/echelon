@@ -79,8 +79,8 @@ impl RelationalStorage {
         sqlx::query_as!(
             DBUser,
             r#"
-        SELECT * FROM chat.users WHERE id = $1
-        "#,
+            SELECT * FROM chat.users WHERE id = $1
+            "#,
             id
         )
             .fetch_optional(&self.pool)

@@ -91,7 +91,7 @@ pub enum ChunkError {
 
 #[cfg(test)]
 mod tests {
-    use crate::processing::chunk::{chunk, chunk_by_words};
+    use crate::vectorization::chunk::{chunk, chunk_by_words};
 
     #[test]
     fn test_chunk_string_idx_0() {

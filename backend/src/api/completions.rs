@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::llm::inference::InferenceRequest;
 use crate::llm::prompt::{Instruction, Prompt};
-use crate::processing::embedding::embed;
+use crate::vectorization::embedding::embed;
 use crate::storage::model::{DBMessageRole, DBUser};
 use crate::storage::vector::VectorStorage;
 use axum::extract::State;

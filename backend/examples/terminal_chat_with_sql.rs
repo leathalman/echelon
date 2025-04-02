@@ -2,7 +2,7 @@ use backend::llm::inference;
 use backend::llm::inference::{Inference, InferenceRequest};
 use backend::llm::model::Model;
 use backend::llm::prompt::Prompt;
-use backend::processing::embedding::embed;
+use backend::vectorization::embedding::embed;
 use backend::storage;
 use backend::storage::postgres::{DBMessageRole, RelationalStorage};
 use backend::storage::vector::{VectorStorage, VectorStorageBackend};

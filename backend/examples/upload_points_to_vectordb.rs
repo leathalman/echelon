@@ -1,7 +1,7 @@
-use backend::processing::chunk::{chunk, chunk_by_words};
-use backend::processing::document::Document;
-use backend::processing::embedding::embed_batch;
-use backend::processing::utils::compile_vectors;
+use backend::vectorization::chunk::{chunk, chunk_by_words};
+use backend::vectorization::document::Document;
+use backend::vectorization::embedding::embed_batch;
+use backend::vectorization::utils::compile_vectors;
 use backend::storage::vector::{VectorStorage};
 use fastembed::EmbeddingModel;
 use std::error::Error;
@@ -9,6 +9,8 @@ use std::path::Path;
 use tracing::error;
 use backend::config::{Config, Environment};
 use backend::storage::qdrant::QdrantAdapter;
+
+// DONT UPLOAD QUICK FACTS
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -26,15 +28,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let db_collection = "texas_christian_university5";
+    let db_collection = "texas_christian_university";
 
-    vector_storage
-        .create_collection(db_collection, EmbeddingModel::BGELargeENV15)
-        .await?;
+    // vector_storage
+    //     .create_collection(db_collection, EmbeddingModel::BGELargeENV15)
+    //     .await?;
 
     // bge large
 
-    let document = Document::new(Path::new("/Users/harrison/Developer/echelon/backend/data/Course_Catalog.md"))?;
+    let document = Document::new(Path::new("/Users/harrison/Developer/echelon/backend/data/Common_Dataset.md"))?;
 
     let max_words = 1000;
     let overlap = max_words / 10; // 10% overlap
