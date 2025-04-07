@@ -39,6 +39,7 @@
   "dependencies": {
     "@fontsource/figtree": "^5.1.1",
     "@tailwindcss/typography": "^0.5.16",
+    "eventsource-parser": "^3.0.1",
     "js-cookie": "^3.0.5",
     "marked": "^15.0.6",
     "tailwindcss-animate": "^1.0.7"
