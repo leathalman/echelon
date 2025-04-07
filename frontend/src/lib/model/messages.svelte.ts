@@ -8,10 +8,7 @@ export const messages = $state({
 });
 
 export const newMessage = $state({
-	content: '',
-	completionPending: false,
-	completion: '',
+	shouldStartCompletion: false,
+	isAwaitingStream: false,
 	isStreaming: false,
-	streamingResponse: '',
-	stream: null as Response | null
 });

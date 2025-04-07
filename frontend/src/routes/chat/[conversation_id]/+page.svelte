@@ -8,18 +8,27 @@
 	import { marked } from 'marked';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { conversations } from '$lib/model/conversations.svelte';
-	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 
 	let { data } = $props();
 	let query = $state('');
 	let streamingResponse = $state('');
-	let isStreaming = $state(false);
 	let textAreaHeight = $state(25);
 	let markdownWidth = $state();
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 
-	async function processStream(response: Response) {
+	async function handleStream() {
+		// Start streaming
+		const response = await createStreamingCompletion(
+			data.authToken,
+			messages.value,
+			data.user.university
+		);
+
+		newMessage.isAwaitingStream = false;
+		newMessage.isStreaming = true;
+
 		// Make sure we're getting a text event stream
 		if (!response.body) {
 			throw new Error('No response body');
@@ -61,13 +70,24 @@
 		} finally {
 			reader.releaseLock();
 		}
+
+		// Once streaming is complete, save the full response
+		const assistantMessage: Message = {
+			content: streamingResponse,
+			role: 'Assistant'
+		};
+
+		newMessage.isStreaming = false;
+		messages.value.push(assistantMessage);
+
+		// Save to backend
+		await createMessage(data.authToken, conversationId, streamingResponse, 'Assistant');
 	}
 
 	async function handleSubmitQuery() {
 		if (!query.trim()) return; // Don't submit empty queries
 
 		try {
-			isStreaming = true;
 			streamingResponse = ''; // Reset the streaming response
 
 			const userMessage: Message = {
@@ -78,35 +98,13 @@
 			// Update UI first
 			messages.value.push(userMessage);
 
-			newMessage.completionPending = true;
+			newMessage.isAwaitingStream = true;
 			await createMessage(data.authToken, conversationId, userMessage.content, userMessage.role);
 
 			// Clear input
 			query = '';
 
-			// Start streaming
-			const response = await createStreamingCompletion(
-				data.authToken,
-				messages.value,
-				data.user.university
-			);
-
-			newMessage.completionPending = false;
-
-			// Process the SSE stream
-			await processStream(response);
-
-			// Once streaming is complete, save the full response
-			const assistantMessage: Message = {
-				content: streamingResponse,
-				role: 'Assistant'
-			};
-
-			isStreaming = false;
-			messages.value.push(assistantMessage);
-
-			// Save to backend
-			await createMessage(data.authToken, conversationId, streamingResponse, 'Assistant');
+			await handleStream()
 		} catch (error) {
 			console.error('Error in streaming:', error);
 		}
@@ -129,19 +127,24 @@
 					conversation.title = title
 					await updateConversation(data.authToken, conversationId, title);
 				}
-
 				await updateConversation(data.authToken, conversationId, title);
 			}
 		}
 	}
 
-	onMount(async () => {
-		await handleTitleCreation()
-	});
-
 	$effect(() => {
 		// save messages into rune for use when updating ui directly
 		messages.value = data.messages;
+	});
+
+	afterNavigate(async ({ from }) => {
+		let previousPage = from?.url.pathname || '/';
+
+		if (previousPage === "/chat" && newMessage.shouldStartCompletion) {
+			console.log("Came from /chat and shouldStartCompletion")
+			await handleStream()
+			await handleTitleCreation()
+		}
 	});
 </script>
 
@@ -159,8 +162,7 @@
 				</div>
 			{/if}
 		{/each}
-
-		{#if newMessage.completionPending}
+		{#if newMessage.isAwaitingStream}
 			<div class="space-y-2">
 				<div class="flex flex-row">
 					<Skeleton class="h-4 w-4/6" />
@@ -173,8 +175,7 @@
 				</div>
 			</div>
 		{/if}
-
-		{#if isStreaming}
+		{#if newMessage.isStreaming}
 			<div class="prose">
 				{streamingResponse}
 			</div>
@@ -187,14 +188,14 @@
 					bind:height={textAreaHeight}
 					bind:value={query}
 					class="w-full font-medium bg-white"
-					disabled={isStreaming}
+					disabled={newMessage.isStreaming}
 					onkeydown={handleKeydown}
 					placeholder="What else would you like to know?" />
 			</div>
 			<div class="flex items-end">
 				<Button
 					class="w-8 h-8 my-2 mx-2"
-					disabled={isStreaming}
+					disabled={newMessage.isStreaming}
 					onclick={handleSubmitQuery}>
 					<ArrowRight />
 				</Button>

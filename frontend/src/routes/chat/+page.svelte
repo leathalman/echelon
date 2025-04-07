@@ -3,20 +3,18 @@
 	import { Button } from '$lib/components/ui/button';
 	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 	import { goto } from '$app/navigation';
-	import { type Message, messages } from '$lib/model/messages.svelte';
 	import { conversations } from '$lib/model/conversations.svelte';
 	import {
-		createCompletion,
 		createConversation,
 		createMessage,
 	} from '$lib/api/client';
-	import { newMessage } from '$lib/model/messages.svelte.js';
+	import { messages, newMessage } from '$lib/model/messages.svelte';
 
 	let query = $state('');
 	let { data } = $props();
 
 	async function handleSubmitQuery() {
-		if (!query.trim()) return; // don't submit empty queries
+		if (!query.trim()) return;
 
 		const conversationId = await createConversation(data.authToken);
 
@@ -29,43 +27,26 @@
 			title: 'Untitled'
 		});
 
+		newMessage.shouldStartCompletion = true;
+		newMessage.isAwaitingStream = true;
+
+		messages.value.unshift({
+			role: 'User',
+			content: query
+		});
+
 		await createMessage(data.authToken, conversationId, query, 'User');
 
 		await goto(`/chat/${conversationId}`);
 
-		newMessage.completionPending = true;
-		newMessage.content = query;
-
-		createCompletion(data.authToken, [{
-			role: 'User',
-			content: query
-		}] as Message[], data.user.university)
-			.then(completion => {
-				newMessage.completionPending = false;
-				newMessage.completion = completion;
-
-				messages.value.push({
-					role: 'Assistant',
-					content: completion
-				});
-
-				return createMessage(data.authToken, conversationId, completion, 'Assistant');
-			})
-			.catch(error => {
-				newMessage.completionPending = false;
-				console.error('Error in completion:', error);
-			});
-		// await goto(`/chat/${conversationId}`);
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
 			if (!event.shiftKey) {
-				// Enter without shift - submit
-				event.preventDefault(); // Prevent default newline
+				event.preventDefault();
 				handleSubmitQuery();
 			}
-			// With shift - let the default behavior (newline) happen
 		}
 	}
 </script>
