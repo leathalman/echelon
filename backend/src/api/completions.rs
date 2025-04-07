@@ -15,6 +15,7 @@ use std::sync::Arc;
 use axum::response::sse::Event;
 use futures_util::{stream, Stream, StreamExt};
 use ollama_rs::generation::completion::request::GenerationRequest;
+use ollama_rs::generation::options::GenerationOptions;
 use tracing::{error};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -172,10 +173,16 @@ pub async fn completion_streaming_handler(
         Instruction::Title => prompt.to_string_title(),
     };
 
+    let options = GenerationOptions::default()
+        // .temperature(0.2)
+        // .repeat_penalty(1.5)
+        // .top_k(25)
+        // .top_p(0.25)
+        .num_ctx(32000);
 
     // Create the stream
     let stream_result = state.llm.client.generate_stream(
-        GenerationRequest::new(model_name, prompt_str)
+        GenerationRequest::new(model_name, prompt_str).options(options)
     ).await;
 
     match stream_result {
