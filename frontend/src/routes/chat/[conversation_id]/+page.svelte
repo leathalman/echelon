@@ -12,13 +12,17 @@
 	import { afterNavigate } from '$app/navigation';
 	import { createParser } from 'eventsource-parser';
 	import { onMount } from 'svelte';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
+
 
 	let { data } = $props();
 	let query = $state('');
 	let streamingResponse = $state('');
-	let textAreaHeight = $state(25);
+	let textAreaHeight = $state(60);
 	let markdownWidth = $state();
 	let chatContainer = $state<HTMLDivElement | null>(null);
+	let inputContainerHeight = $state(0);
+	let inputContainer = $state<HTMLDivElement | null>(null);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 
@@ -152,9 +156,9 @@
 		let conversation = conversations.value.find(conversation => conversation.id === conversationId);
 
 		if (conversation) {
-			if (conversation.title === "Untitled") {
+			if (conversation.title === 'Untitled') {
 				let title = await createTitle(data.authToken, messages.value);
-				if (title !== "") {
+				if (title !== '') {
 					conversation.title = title;
 					await updateConversation(data.authToken, conversationId, title);
 				}
@@ -163,20 +167,17 @@
 	}
 
 	$effect(() => {
-		// save messages into rune for use when updating ui directly
 		messages.value = data.messages;
-		// Scroll to bottom when messages change
-		scrollToBottom();
-	});
 
-	// Also scroll when streaming response changes
-	$effect(() => {
+		if (inputContainer) {
+			inputContainerHeight = inputContainer.offsetHeight;
+		}
+
 		if (streamingResponse) {
 			scrollToBottom();
 		}
 	});
 
-	// Scroll to bottom when page loads
 	onMount(() => {
 		scrollToBottom();
 	});
@@ -184,20 +185,18 @@
 	afterNavigate(async ({ from }) => {
 		let previousPage = from?.url.pathname || '/';
 
-		if (previousPage === "/chat" && newMessage.shouldStartCompletion) {
-			console.log("Came from /chat and shouldStartCompletion");
+		if (previousPage === '/chat' && newMessage.shouldStartCompletion) {
+			console.log('Came from /chat and shouldStartCompletion');
 			await handleStream();
 			await handleTitleCreation();
 		}
-
-		// Ensure we're scrolled to bottom after navigation
 		scrollToBottom();
 	});
 </script>
 
 <div class="flex flex-col items-center pt-24">
 	<div bind:clientWidth={markdownWidth} bind:this={chatContainer} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
-			 style="margin-bottom: {textAreaHeight + 80}px">
+			 style="margin-bottom: {inputContainerHeight + 80}px" >
 		{#each messages.value as message}
 			{#if message.role === 'User'}
 				<div class="flex w-full justify-end">
@@ -228,23 +227,25 @@
 			</div>
 		{/if}
 	</div>
-	<div class="fixed bottom-0 pb-6 bg-background" style="width: {markdownWidth}px">
-		<div class="flex flex-row rounded-lg shadow-lg border justify-between bg-white">
-			<div class="flex items-center mx-1 px-2 my-2 w-[90%]">
-				<TextareaPlain
-					bind:height={textAreaHeight}
-					bind:value={query}
-					class="w-full font-medium bg-white"
-					disabled={newMessage.isStreaming}
-					onkeydown={handleKeydown}
-					placeholder="What else would you like to know?" />
-			</div>
-			<div class="flex items-end">
-				<Button
-					class="w-8 h-8 my-2 mx-2"
-					disabled={newMessage.isStreaming}
-					onclick={handleSubmitQuery}>
-					<ArrowRight />
+	<div class="fixed bottom-0 pb-8 bg-background" style="width: {markdownWidth}px">
+		<div
+			bind:this={inputContainer}
+			class="flex flex-col rounded-xl
+      border-[0.5px] border-border focus-within:outline
+      focus-within:outline-ring focus-within:outline-2
+      focus-within:outline-offset-2 bg-white
+      shadow-md shadow-gray-300"
+		>
+			<TextareaPlain
+				bind:height={textAreaHeight}
+				bind:value={query}
+				class="text-md mt-4 ml-5 bg-white"
+				disabled={newMessage.isStreaming}
+				onkeydown={handleKeydown}
+				placeholder="Ask Echelon"></TextareaPlain>
+			<div class="flex w-full justify-end items-end py-2 px-2">
+				<Button class="w-9 h-9 rounded-xl" disabled={newMessage.isStreaming} onclick={handleSubmitQuery}>
+					<ArrowUp />
 				</Button>
 			</div>
 		</div>
