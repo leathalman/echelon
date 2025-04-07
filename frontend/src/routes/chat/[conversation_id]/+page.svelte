@@ -177,7 +177,7 @@
 		{/if}
 		{#if newMessage.isStreaming}
 			<div class="prose">
-				{streamingResponse}
+				{@html marked(streamingResponse)}
 			</div>
 		{/if}
 	</div>
