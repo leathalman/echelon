@@ -15,7 +15,7 @@ use std::sync::Arc;
 use axum::response::sse::Event;
 use futures_util::{stream, Stream, StreamExt};
 use ollama_rs::generation::completion::request::GenerationRequest;
-use tracing::{error, info};
+use tracing::{error};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -152,9 +152,10 @@ pub async fn completion_streaming_handler(
         .take(5)
         .for_each(|point| context.push_str(&point.content));
 
-    let profile = user.academic_profile.unwrap_or_else(|| "".to_string());
+    let profile = user.academic_profile.unwrap();
 
-    info!("User queries: {:?}", user_queries);
+    // info!("User queries: {:?}", user_queries);
+    // info!("User profile: {:?}", profile);
 
     let prompt = Prompt::new(
         payload.messages,

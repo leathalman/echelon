@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { createStreamingCompletion, createMessage, createTitle, updateConversation } from '$lib/api/client';
+	import { createMessage, createStreamingCompletion, createTitle, updateConversation } from '$lib/api/client';
 	import { type Message, messages, newMessage } from '$lib/model/messages.svelte';
 	import TextareaPlain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -9,6 +9,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { conversations } from '$lib/model/conversations.svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { createParser } from 'eventsource-parser';
 
 	let { data } = $props();
 	let query = $state('');
@@ -18,8 +19,26 @@
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 
+	function createSSEParser(onMessage: (message: string) => void, onError?: (error: string) => void) {
+		return createParser({
+			onEvent(event) {
+				if (event.event === 'error') {
+					onError?.(event.data);
+					return;
+				}
+				if (event.event === 'message') {
+					onMessage(event.data);
+					return;
+				}
+				onMessage(event.data);
+			},
+			onError(err) {
+				onError?.(err.message);
+			}
+		});
+	}
+
 	async function handleStream() {
-		// Start streaming
 		const response = await createStreamingCompletion(
 			data.authToken,
 			messages.value,
@@ -28,15 +47,25 @@
 
 		newMessage.isAwaitingStream = false;
 		newMessage.isStreaming = true;
+		streamingResponse = '';
 
-		// Make sure we're getting a text event stream
 		if (!response.body) {
 			throw new Error('No response body');
 		}
 
-		// Set up SSE processing
 		const reader = response.body.getReader();
 		const decoder = new TextDecoder();
+
+		const parser = createSSEParser(
+			(message) => {
+				if (message && message !== '[DONE]') {
+					streamingResponse += message;
+				}
+			},
+			(error) => {
+				console.error('Stream error:', error);
+			}
+		);
 
 		try {
 			while (true) {
@@ -46,41 +75,22 @@
 					break;
 				}
 
-				// Decode the chunk (which is a Uint8Array)
-				const text = decoder.decode(value, { stream: true });
-
-				// Process the SSE format
-				// SSE data comes in the format: "data: message\n\n"
-				const lines = text.split('\n');
-
-				for (const line of lines) {
-					if (line.startsWith('data: ')) {
-						// Extract just the message part
-						const message = line.substring(6); // "data: ".length === 6
-
-						// Check for special event types
-						if (message && message !== '[DONE]') {
-							streamingResponse += message;
-						}
-					} else if (line.startsWith('event: error')) {
-						console.error('Stream error:', lines);
-					}
-				}
+				const chunk = decoder.decode(value, { stream: true });
+				parser.feed(chunk);
 			}
 		} finally {
 			reader.releaseLock();
 		}
 
-		// Once streaming is complete, save the full response
 		const assistantMessage: Message = {
 			content: streamingResponse,
 			role: 'Assistant'
 		};
 
-		newMessage.isStreaming = false;
 		messages.value.push(assistantMessage);
 
-		// Save to backend
+		newMessage.isStreaming = false;
+
 		await createMessage(data.authToken, conversationId, streamingResponse, 'Assistant');
 	}
 
@@ -104,9 +114,11 @@
 			// Clear input
 			query = '';
 
-			await handleStream()
+			await handleStream();
 		} catch (error) {
 			console.error('Error in streaming:', error);
+			newMessage.isAwaitingStream = false;
+			newMessage.isStreaming = false;
 		}
 	}
 
@@ -124,10 +136,9 @@
 			if (conversation.title === "Untitled") {
 				let title = await createTitle(data.authToken, messages.value);
 				if (title !== "") {
-					conversation.title = title
+					conversation.title = title;
 					await updateConversation(data.authToken, conversationId, title);
 				}
-				await updateConversation(data.authToken, conversationId, title);
 			}
 		}
 	}
@@ -141,9 +152,9 @@
 		let previousPage = from?.url.pathname || '/';
 
 		if (previousPage === "/chat" && newMessage.shouldStartCompletion) {
-			console.log("Came from /chat and shouldStartCompletion")
-			await handleStream()
-			await handleTitleCreation()
+			console.log("Came from /chat and shouldStartCompletion");
+			await handleStream();
+			await handleTitleCreation();
 		}
 	});
 </script>

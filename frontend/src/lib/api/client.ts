@@ -155,7 +155,7 @@ export async function createStreamingCompletion(
 		throw new Error(`Server responded with ${response.status}`);
 	}
 
-	return response; // Return the whole response object instead
+	return response;
 }
 
 
