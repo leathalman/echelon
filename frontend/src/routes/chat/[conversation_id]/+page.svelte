@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Add other imports from your existing file
 	import { page } from '$app/state';
 	import { createMessage, createStreamingCompletion, createTitle, updateConversation } from '$lib/api/client';
 	import { type Message, messages, newMessage } from '$lib/model/messages.svelte';
@@ -10,14 +11,29 @@
 	import { conversations } from '$lib/model/conversations.svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { createParser } from 'eventsource-parser';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 	let query = $state('');
 	let streamingResponse = $state('');
 	let textAreaHeight = $state(25);
 	let markdownWidth = $state();
+	let chatContainer = $state<HTMLDivElement | null>(null);
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
+
+	// Function to scroll to the bottom of the chat container
+	function scrollToBottom() {
+		if (chatContainer) {
+			// Use setTimeout to ensure this happens after the DOM updates
+			setTimeout(() => {
+				window.scrollTo({
+					top: document.body.scrollHeight,
+					behavior: 'smooth'
+				});
+			}, 100);
+		}
+	}
 
 	function createSSEParser(onMessage: (message: string) => void, onError?: (error: string) => void) {
 		return createParser({
@@ -60,6 +76,7 @@
 			(message) => {
 				if (message && message !== '[DONE]') {
 					streamingResponse += message;
+					scrollToBottom(); // Scroll to bottom on each chunk
 				}
 			},
 			(error) => {
@@ -88,6 +105,7 @@
 		};
 
 		messages.value.push(assistantMessage);
+		scrollToBottom(); // Ensure we're scrolled to bottom when streaming completes
 
 		newMessage.isStreaming = false;
 
@@ -107,6 +125,7 @@
 
 			// Update UI first
 			messages.value.push(userMessage);
+			scrollToBottom(); // Scroll after adding user message
 
 			newMessage.isAwaitingStream = true;
 			await createMessage(data.authToken, conversationId, userMessage.content, userMessage.role);
@@ -146,6 +165,20 @@
 	$effect(() => {
 		// save messages into rune for use when updating ui directly
 		messages.value = data.messages;
+		// Scroll to bottom when messages change
+		scrollToBottom();
+	});
+
+	// Also scroll when streaming response changes
+	$effect(() => {
+		if (streamingResponse) {
+			scrollToBottom();
+		}
+	});
+
+	// Scroll to bottom when page loads
+	onMount(() => {
+		scrollToBottom();
 	});
 
 	afterNavigate(async ({ from }) => {
@@ -156,11 +189,14 @@
 			await handleStream();
 			await handleTitleCreation();
 		}
+
+		// Ensure we're scrolled to bottom after navigation
+		scrollToBottom();
 	});
 </script>
 
 <div class="flex flex-col items-center pt-24">
-	<div bind:clientWidth={markdownWidth} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
+	<div bind:clientWidth={markdownWidth} bind:this={chatContainer} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
 			 style="margin-bottom: {textAreaHeight + 80}px">
 		{#each messages.value as message}
 			{#if message.role === 'User'}
