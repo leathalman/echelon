@@ -10,5 +10,8 @@ export const messages = $state({
 export const newMessage = $state({
 	content: '',
 	completionPending: false,
-	completion: ''
+	completion: '',
+	isStreaming: false,
+	streamingResponse: '',
+	stream: null as Response | null
 });

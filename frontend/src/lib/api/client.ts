@@ -134,6 +134,31 @@ export async function createCompletion(jwt: string, messages: Message[], univers
 	}
 }
 
+export async function createStreamingCompletion(
+	authToken: string,
+	messages: Message[],
+	collection: string
+): Promise<Response> {
+	const response = await fetch(`${API_CONFIG.BASE_URL}/completions/stream`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${authToken}`
+		},
+		body: JSON.stringify({
+			messages,
+			collection
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(`Server responded with ${response.status}`);
+	}
+
+	return response; // Return the whole response object instead
+}
+
+
 export async function createTitle(jwt: string, messages: Message[]) {
 	try {
 		const formattedMessages = messages.map((message) => ({

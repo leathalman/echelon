@@ -10,7 +10,7 @@ use std::default::Default;
 use crate::llm::prompt::Instruction;
 
 pub struct OllamaAdapter {
-    client: Ollama,
+    pub client: Ollama,
     model: Model,
 }
 
