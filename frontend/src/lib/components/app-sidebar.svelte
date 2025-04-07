@@ -2,10 +2,8 @@
 	import BookText from 'lucide-svelte/icons/book-text';
 	import UserRound from 'lucide-svelte/icons/user-round';
 	import Settings from 'lucide-svelte/icons/settings';
-
 	import Search from 'lucide-svelte/icons/search';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
-
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { MenuItem } from '$lib/components/ui/sidebar/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -22,8 +20,10 @@
 		LogOut
 	} from 'lucide-svelte';
 	import { logout } from '$lib/api/auth';
+	import { page } from '$app/state';
 
 	let { data } = $props();
+	let currentConversationId = $derived(page.params.conversation_id)
 
 	function handleNewChat() {
 		goto('/chat');
@@ -56,13 +56,23 @@
 				<Sidebar.Menu>
 					{#each conversations.value as conversation}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
-								{#snippet child({ props })}
-									<a href={`/chat/${conversation.id}`} {...props}>
-										<span class="text-sm">{conversation.title}</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
+							{#if currentConversationId === conversation.id.toString()}
+								<Sidebar.MenuButton class="bg-sidebar-accent text-sidebar-accent-foreground">
+									{#snippet child({ props })}
+											<a href={`/chat/${conversation.id}`} {...props}>
+												<span class="text-sm">{conversation.title}</span>
+											</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							{:else}
+								<Sidebar.MenuButton>
+									{#snippet child({ props })}
+										<a href={`/chat/${conversation.id}`} {...props}>
+											<span class="text-sm">{conversation.title}</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							{/if}
 						</Sidebar.MenuItem>
 					{/each}
 				</Sidebar.Menu>
