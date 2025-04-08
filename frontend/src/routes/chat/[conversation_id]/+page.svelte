@@ -1,8 +1,7 @@
 <script lang="ts">
-	// Add other imports from your existing file
 	import { page } from '$app/state';
 	import { createMessage, createStreamingCompletion, createTitle, updateConversation } from '$lib/api/client';
-	import { type Message, messages, newMessage } from '$lib/model/messages.svelte';
+	import { type Message, newMessage } from '$lib/model/messages.svelte';
 	import TextareaPlain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { marked } from 'marked';
@@ -14,15 +13,21 @@
 	import { onMount } from 'svelte';
 	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 
-
 	let { data } = $props();
 	let query = $state('');
-	let streamingResponse = $state('');
 	let textAreaHeight = $state(60);
 	let markdownWidth = $state();
 	let chatContainer = $state<HTMLDivElement | null>(null);
 	let inputContainerHeight = $state(0);
 	let inputContainer = $state<HTMLDivElement | null>(null);
+
+	let isStreaming = $state(false);
+	let isAwaitingStream = $state(false);
+
+	let streamingResponse = $state('');
+	let currentMessages = $state({
+		value: [] as Message[]
+	});
 
 	const conversationId = $derived(parseInt(page.params.conversation_id));
 
@@ -61,17 +66,18 @@
 	async function handleStream() {
 		const response = await createStreamingCompletion(
 			data.authToken,
-			messages.value,
+			currentMessages.value, // Use local messages state
 			data.user.university
 		);
 
-		newMessage.isAwaitingStream = false;
-		newMessage.isStreaming = true;
-		streamingResponse = '';
 
 		if (!response.body) {
 			throw new Error('No response body');
 		}
+
+		isAwaitingStream = false;
+		isStreaming = true;
+		streamingResponse = '';
 
 		const reader = response.body.getReader();
 		const decoder = new TextDecoder();
@@ -108,10 +114,13 @@
 			role: 'Assistant'
 		};
 
-		messages.value.push(assistantMessage);
+		// Update both state arrays
+		// currentMessages = [...currentMessages, assistantMessage];
+		currentMessages.value.push(assistantMessage)
+
 		scrollToBottom(); // Ensure we're scrolled to bottom when streaming completes
 
-		newMessage.isStreaming = false;
+		isStreaming = false;
 
 		await createMessage(data.authToken, conversationId, streamingResponse, 'Assistant');
 	}
@@ -127,11 +136,13 @@
 				role: 'User'
 			};
 
-			// Update UI first
-			messages.value.push(userMessage);
+			// Update local state first (create a new array)
+			// currentMessages = [...currentMessages, userMessage];
+			currentMessages.value.push(userMessage)
+
 			scrollToBottom(); // Scroll after adding user message
 
-			newMessage.isAwaitingStream = true;
+			isAwaitingStream = true;
 			await createMessage(data.authToken, conversationId, userMessage.content, userMessage.role);
 
 			// Clear input
@@ -140,8 +151,8 @@
 			await handleStream();
 		} catch (error) {
 			console.error('Error in streaming:', error);
-			newMessage.isAwaitingStream = false;
-			newMessage.isStreaming = false;
+			isAwaitingStream = false;
+			isStreaming = false;
 		}
 	}
 
@@ -157,7 +168,7 @@
 
 		if (conversation) {
 			if (conversation.title === 'Untitled') {
-				let title = await createTitle(data.authToken, messages.value);
+				let title = await createTitle(data.authToken, currentMessages.value);
 				if (title !== '') {
 					conversation.title = title;
 					await updateConversation(data.authToken, conversationId, title);
@@ -166,19 +177,24 @@
 		}
 	}
 
+	// Initialize the local message state when data.messages changes
 	$effect(() => {
-		messages.value = data.messages;
+		if (streamingResponse) {
+			scrollToBottom();
+		}
 
 		if (inputContainer) {
 			inputContainerHeight = inputContainer.offsetHeight;
 		}
 
-		if (streamingResponse) {
-			scrollToBottom();
-		}
+		$inspect(currentMessages)
 	});
 
 	onMount(() => {
+		if (data.messages && (data.messages.length > currentMessages.value.length)) {
+			currentMessages.value = [...data.messages];
+		}
+
 		scrollToBottom();
 	});
 
@@ -187,6 +203,8 @@
 
 		if (previousPage === '/chat' && newMessage.shouldStartCompletion) {
 			console.log('Came from /chat and shouldStartCompletion');
+			newMessage.shouldStartCompletion = false;
+			isAwaitingStream = true
 			await handleStream();
 			await handleTitleCreation();
 		}
@@ -197,7 +215,7 @@
 <div class="flex flex-col items-center pt-24" in:fade={{ duration: 200 }}>
 	<div bind:clientWidth={markdownWidth} bind:this={chatContainer} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
 			 style="margin-bottom: {inputContainerHeight + 80}px" >
-		{#each messages.value as message}
+		{#each currentMessages.value as message}
 			{#if message.role === 'User'}
 				<div class="flex w-full justify-end">
 					<span class="text-md bg-violet-200 rounded-lg p-3">{message.content}</span>
@@ -208,7 +226,7 @@
 				</div>
 			{/if}
 		{/each}
-		{#if newMessage.isAwaitingStream}
+		{#if isAwaitingStream}
 			<div class="space-y-2">
 				<div class="flex flex-row">
 					<Skeleton class="h-4 w-4/6" />
@@ -221,7 +239,7 @@
 				</div>
 			</div>
 		{/if}
-		{#if newMessage.isStreaming}
+		{#if isStreaming}
 			<div class="prose">
 				{@html marked(streamingResponse)}
 			</div>
@@ -240,11 +258,11 @@
 				bind:height={textAreaHeight}
 				bind:value={query}
 				class="text-md mt-4 ml-5 bg-white"
-				disabled={newMessage.isStreaming}
+				disabled={isStreaming || newMessage.shouldStartCompletion || isAwaitingStream}
 				onkeydown={handleKeydown}
 				placeholder="Ask Echelon"></TextareaPlain>
 			<div class="flex w-full justify-end items-end py-2 px-2">
-				<Button class="w-9 h-9 rounded-xl" disabled={newMessage.isStreaming} onclick={handleSubmitQuery}>
+				<Button class="w-9 h-9 rounded-xl" disabled={isStreaming || newMessage.shouldStartCompletion || isAwaitingStream} onclick={handleSubmitQuery}>
 					<ArrowUp />
 				</Button>
 			</div>
