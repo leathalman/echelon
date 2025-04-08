@@ -5,12 +5,12 @@
 	import { type Message, messages, newMessage } from '$lib/model/messages.svelte';
 	import TextareaPlain from '$lib/components/ui/textarea/textarea-plain.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import { marked } from 'marked';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { conversations } from '$lib/model/conversations.svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { createParser } from 'eventsource-parser';
+	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 
@@ -194,7 +194,7 @@
 	});
 </script>
 
-<div class="flex flex-col items-center pt-24">
+<div class="flex flex-col items-center pt-24" in:fade={{ duration: 200 }}>
 	<div bind:clientWidth={markdownWidth} bind:this={chatContainer} class="flex flex-col w-[90%] md:max-w-156 space-y-8"
 			 style="margin-bottom: {inputContainerHeight + 80}px" >
 		{#each messages.value as message}
