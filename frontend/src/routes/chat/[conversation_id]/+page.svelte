@@ -70,7 +70,6 @@
 			data.user.university
 		);
 
-
 		if (!response.body) {
 			throw new Error('No response body');
 		}
@@ -186,15 +185,9 @@
 		if (inputContainer) {
 			inputContainerHeight = inputContainer.offsetHeight;
 		}
-
-		$inspect(currentMessages)
 	});
 
 	onMount(() => {
-		if (data.messages && (data.messages.length > currentMessages.value.length)) {
-			currentMessages.value = [...data.messages];
-		}
-
 		scrollToBottom();
 	});
 
@@ -203,11 +196,18 @@
 
 		if (previousPage === '/chat' && newMessage.shouldStartCompletion) {
 			console.log('Came from /chat and shouldStartCompletion');
+			currentMessages.value.push(newMessage.value)
+
 			newMessage.shouldStartCompletion = false;
 			isAwaitingStream = true
+
 			await handleStream();
 			await handleTitleCreation();
+		} else {
+			console.log("Setting currentMessages from nav")
+			currentMessages.value = data.messages
 		}
+
 		scrollToBottom();
 	});
 </script>

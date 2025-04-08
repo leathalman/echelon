@@ -3,12 +3,9 @@ export type Message = {
 	role: 'User' | 'Assistant';
 };
 
-export const messages = $state({
-	value: [] as Message[]
-});
-
 export const newMessage = $state({
 	shouldStartCompletion: false,
 	isAwaitingStream: false,
 	isStreaming: false,
+	value: {} as Message,
 });

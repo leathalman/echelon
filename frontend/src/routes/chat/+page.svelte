@@ -8,7 +8,7 @@
 		createConversation,
 		createMessage,
 	} from '$lib/api/client';
-	import { messages, newMessage } from '$lib/model/messages.svelte';
+	import { newMessage } from '$lib/model/messages.svelte';
 
 	let query = $state('');
 	let { data } = $props();
@@ -30,15 +30,14 @@
 		newMessage.shouldStartCompletion = true;
 		newMessage.isAwaitingStream = true;
 
-		messages.value.unshift({
+		newMessage.value = {
 			role: 'User',
 			content: query
-		});
+		};
 
 		await createMessage(data.authToken, conversationId, query, 'User');
 
 		await goto(`/chat/${conversationId}`);
-
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
