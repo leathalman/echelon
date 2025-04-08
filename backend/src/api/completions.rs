@@ -193,13 +193,23 @@ pub async fn completion_streaming_handler(
                     Some(result) => {
                         match result {
                             Ok(responses) => {
+                                // Process responses
                                 if responses.is_empty() {
-                                    // Empty response, continue to next chunk
+                                    // Just continue to next chunk if empty
                                     Some((Ok(Event::default().event("message").data("")), stream))
                                 } else {
-                                    // Process the first response and leave the rest for later
-                                    let resp = &responses[0];
-                                    Some((Ok(Event::default().event("message").data(&resp.response)), stream))
+                                    // Process all responses in the chunk
+                                    let combined_response = responses.iter()
+                                        .map(|resp| resp.response.clone())
+                                        .collect::<Vec<String>>()
+                                        .join("");
+
+                                    if !combined_response.is_empty() {
+                                        Some((Ok(Event::default().event("message").data(combined_response)), stream))
+                                    } else {
+                                        // Continue to next chunk
+                                        Some((Ok(Event::default().event("message").data("")), stream))
+                                    }
                                 }
                             }
                             Err(e) => {
@@ -215,8 +225,8 @@ pub async fn completion_streaming_handler(
                         }
                     }
                     None => {
-                        // Stream is done, send a [DONE] event
-                        Some((Ok(Event::default().event("message").data("[DONE]")), stream))
+                        // Stream has ended - we need to return None entirely to end the stream
+                        None
                     }
                 }
             });
