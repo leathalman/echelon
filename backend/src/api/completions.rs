@@ -195,11 +195,11 @@ pub async fn completion_streaming_handler(
                             Ok(responses) => {
                                 if responses.is_empty() {
                                     // Empty response, continue to next chunk
-                                    Some((Ok(Event::default().data("")), stream))
+                                    Some((Ok(Event::default().event("message").data("")), stream))
                                 } else {
                                     // Process the first response and leave the rest for later
                                     let resp = &responses[0];
-                                    Some((Ok(Event::default().data(&resp.response)), stream))
+                                    Some((Ok(Event::default().event("message").data(&resp.response)), stream))
                                 }
                             }
                             Err(e) => {
@@ -214,10 +214,12 @@ pub async fn completion_streaming_handler(
                             }
                         }
                     }
-                    None => None, // Stream is done
+                    None => {
+                        // Stream is done, send a [DONE] event
+                        Some((Ok(Event::default().event("message").data("[DONE]")), stream))
+                    }
                 }
             });
-
             Ok(Sse::new(event_stream))
         }
         Err(e) => {
