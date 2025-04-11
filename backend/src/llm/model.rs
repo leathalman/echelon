@@ -16,7 +16,7 @@ pub enum Model {
     Mistral24b,
     #[strum(serialize = "gemma3:27b-it-q4_K_M")]
     Gemma3,
-    #[strum(serialize = "mistral:7b-instruct-q4_K_M")]
+    #[strum(serialize = "mistral-small:24b-instruct-2501-fp16")]
     Mistral,
     #[strum(serialize = "mistral-small3.1:24b-instruct-2503-q4_K_M")]
     MistralSmall,
