@@ -16,7 +16,7 @@ use axum::response::sse::Event;
 use futures_util::{stream, Stream, StreamExt};
 use ollama_rs::generation::completion::request::GenerationRequest;
 use ollama_rs::generation::options::GenerationOptions;
-use tracing::{error};
+use tracing::{error, info};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiMessage {
@@ -155,8 +155,38 @@ pub async fn completion_streaming_handler(
 
     let profile = user.academic_profile.unwrap();
 
-    // info!("User queries: {:?}", user_queries);
-    // info!("User profile: {:?}", profile);
+    let profile_embedded = match embed(profile.clone()) {
+        Ok(embedded) => embedded,
+        Err(e) => {
+            error!("Failed to embed user academic profile: {}", e.to_string());
+            let error_response = json!({
+                "message": "Unable to process completion request",
+            });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+    };
+
+    let profile_vector_search_result = match state
+        .vector_storage
+        .query(&payload.collection, profile_embedded)
+        .await {
+        Ok(result) => result,
+        Err(e) => {
+            error!("Failed on vector search: {}", e.to_string());
+            let error_response = json!({
+                "message": "Unable to create completion",
+            });
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        }
+    };
+
+    profile_vector_search_result
+        .points
+        .into_iter()
+        .take(5)
+        .for_each(|point| context.push_str(&point.content));
+
+    // info!("Total context: {:?}", context);
 
     let prompt = Prompt::new(
         payload.messages,
@@ -174,10 +204,11 @@ pub async fn completion_streaming_handler(
     };
 
     let options = GenerationOptions::default()
-        // .temperature(0.2)
+        .temperature(0.4)
         // .repeat_penalty(1.5)
         // .top_k(25)
         // .top_p(0.25)
+        .num_gpu(999)
         .num_ctx(32000);
 
     // Create the stream
