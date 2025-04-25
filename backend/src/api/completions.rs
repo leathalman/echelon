@@ -205,9 +205,9 @@ pub async fn completion_streaming_handler(
 
     let options = GenerationOptions::default()
         .temperature(0.2)
-        .repeat_penalty(1.3)
-        .top_k(40)
-        .top_p(0.75)
+        // .repeat_penalty(1.3)
+        // .top_k(40)
+        // .top_p(0.75)
         .num_ctx(32000);
 
     // Create the stream
