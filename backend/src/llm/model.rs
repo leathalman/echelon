@@ -4,7 +4,7 @@ use strum_macros::{Display, EnumString};
 pub enum Model {
     #[strum(serialize = "llama3.2:latest")]
     Llama3_3b,
-    #[strum(serialize = "qwen2.5:72b-instruct-q4_K_M")]
+    #[strum(serialize = "qwen2.5:72b-instruct-q2_K")]
     Qwen,
     #[strum(serialize = "phi4:14b-q4_K_M")]
     Phi4,
