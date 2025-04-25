@@ -5,7 +5,7 @@ use thiserror::Error;
 
 pub fn build(model: Model, host: &str, port: u16) -> OllamaAdapter {
     match model {
-        Model::Llama3_3b | Model::Llama3_11b | Model::Phi4 | Model::BespokeMinicheck => {
+        Model::Llama3_3b | Model::Qwen | Model::Phi4 | Model::BespokeMinicheck => {
             OllamaAdapter::new(model, host, port)
         }
         // default to Ollama
