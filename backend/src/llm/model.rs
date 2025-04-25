@@ -20,4 +20,6 @@ pub enum Model {
     MistralSmall,
     #[strum(serialize = "llama3.3:70b-instruct-q4_K_M")]
     Llama3,
+    #[strum(serialize = "command-a:111b-03-2025-q4_K_M")]
+    CommandA,
 }

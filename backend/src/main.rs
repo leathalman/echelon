@@ -58,7 +58,7 @@ async fn main() {
             .await
             .expect("Unable to connect to Relational Storage (Postgres) from URL"),
         vector_storage,
-        llm: inference::build(Model::Gemma3, &config.ollama_url, config.ollama_port),
+        llm: inference::build(Model::CommandA, &config.ollama_url, config.ollama_port),
         config,
     }))
         .layer(cors);
