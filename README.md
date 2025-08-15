@@ -2,11 +2,9 @@
 
 Echelon is an open-source AI platform designed to augment academic advising through Retrieval-Augmented Generation (RAG) and Large Language Models (LLMs). It provides students with personalized, real-time, and document-grounded answers based on their academic records, university course catalogs, and internal documents.
 
-> 🔗 [Live Demo](https://echelongpt.com) | 🖋️ [Thesis Paper (PDF)](link-to-thesis-if-public) | 📧 Contact: [harrison.leath@tcu.edu](mailto:harrison.leath@tcu.edu)
+> 🔗 [Live Demo](https://echelongpt.com) | 🖋️ [Thesis Paper (PDF)](https://drive.google.com/file/d/1Z5ywwPdEjDxXAYiBlHT0XLZvstdNntph/view?usp=sharing) | 📧 Contact: [harrison.leath@tcu.edu](mailto:harrison.leath@tcu.edu)
 
 > **Disclaimer:** Demo hosted at [echelongpt.com](https://echelongpt.com) is live until the end of Spring 2025.
-
-![Architecture Overview](link-to-architecture-diagram-if-public)
 
 ---
 
@@ -30,8 +28,6 @@ Echelon is an open-source AI platform designed to augment academic advising thro
 | **Backend** | Rust + Axum + Tokio |
 | **Compute** | Ollama (for LLM inference, containerized) |
 | **Storage** | PostgreSQL, Qdrant, MinIO |
-
-![System Flow](link-to-system-flow-diagram)
 
 ### High-Level Workflow
 
